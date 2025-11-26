@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Button, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -72,12 +72,20 @@ export default function HomeScreen() {
       <View style={styles.textbookContainer}>
         {textbooks.map((textbook: Textbook) => {
           return (
-            <View style={styles.textbook} key="textbook.id">
+            <TouchableOpacity
+              key={textbook.id}
+              style={styles.textbook}
+              onPress={() =>
+                router.push({
+                  pathname: '/read/[id]',
+                  params: { id: textbook.id, title: textbook.title },
+                })
+              }
+            >
               <Text style={styles.title}>{textbook.title}</Text>
-
               <Text style={styles.subtitle}>{textbook.subject}</Text>
               <Text style={styles.subtitle}>By {textbook.author}</Text>
-            </View>
+            </TouchableOpacity>
           );
         })}
         <View style={styles.addTextbook}>
