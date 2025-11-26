@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  */
 export default function AuthScreen() {
   const router = useRouter(); // Initialize the Expo router for navigation
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');  // For sign in tab or sugn up tag is active
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin'); // For sign in tab or sign up tag is active
   const [signInUsername, setSignInUsername] = useState(''); // Sign in form fields
   const [signInPassword, setSignInPassword] = useState('');
   const [isSignInPasswordSecure, setIsSignInPasswordSecure] = useState(true);
@@ -63,7 +63,7 @@ export default function AuthScreen() {
       Alert.alert('Login Failed', error.message);
     }
   };
-/**
+  /**
    * Handles the user registration process
    * Checks password, calls the register API, and shows registration successful
    */
