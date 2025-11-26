@@ -1,6 +1,6 @@
 # this is an example test to see if maestro is working
 
-appId: com.aitextbookcapstone.AITextbookApp
+appId: com.anonymous.AITextbookApp
 ---
 - launchApp
 - tapOn: "Enter your username"

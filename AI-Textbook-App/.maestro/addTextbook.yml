@@ -1,0 +1,16 @@
+# tests that after a successful login the user can add a textbook to their library
+
+appId: com.anonymous.AITextbookApp
+---
+- launchApp
+- tapOn: 
+    text: "Add new textbook"
+    repeat: 2
+    delay: 500
+- tapOn: "Enter Textbook Code(6 digits)"
+- inputText: "PHYSIC"
+- tapOn: 
+    text: "Submit"
+    repeat: 2
+    delay: 500
+- assertNotVisible: "Add Textbook"
