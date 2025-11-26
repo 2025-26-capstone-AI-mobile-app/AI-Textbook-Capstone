@@ -15,19 +15,26 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { login, register } from '../api/login/loginApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+/**
+ * Main login screen
+ * It has both user sign in and sign up.
+ */
 export default function AuthScreen() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
-  const [signInUsername, setSignInUsername] = useState('');
+  const router = useRouter(); // Initialize the Expo router for navigation
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin'); // For sign in tab or sign up tag is active
+  const [signInUsername, setSignInUsername] = useState(''); // Sign in form fields
   const [signInPassword, setSignInPassword] = useState('');
   const [isSignInPasswordSecure, setIsSignInPasswordSecure] = useState(true);
-  const [signUpUsername, setSignUpUsername] = useState('');
+  const [signUpUsername, setSignUpUsername] = useState(''); // Sign up form fields
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUpPasswordSecure, setIsSignUpPasswordSecure] = useState(true);
   const [isConfirmPasswordSecure, setIsConfirmPasswordSecure] = useState(true);
+  /**
+   * Handles the user sign in process
+   * Calls the login API stores and the token and navigates to the home screen
+   */
 
   const onSignIn = async () => {
     try {
@@ -56,7 +63,10 @@ export default function AuthScreen() {
       Alert.alert('Login Failed', error.message);
     }
   };
-
+  /**
+   * Handles the user registration process
+   * Checks password, calls the register API, and shows registration successful
+   */
   const onCreateAccount = async () => {
     if (signUpPassword !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');

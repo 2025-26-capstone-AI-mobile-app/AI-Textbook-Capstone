@@ -1,0 +1,24 @@
+appId: com.yourcompany.aitextbookapp
+
+- launchApp
+- tapOn: "Sign Up"
+- assertVisible: "Create your account"
+- inputText: ${"testuser" + UNIQUE_ID}
+      into:
+        placeholder: "Choose a username"
+- inputText: ${"test_" + UNIQUE_ID + "@example.com"}
+      into:
+        placeholder: "Enter your email"
+- inputText: "password123"
+      into:
+        placeholder: "Create a password, minimum 8 characters"
+
+- inputText: "password123"
+      into:
+        placeholder: "Confirm your password"
+
+- tapOn: "Create Account"
+- assertVisible: "Success!"
+- tapOn: "OK"
+
+- assertVisible: "Welcome back"

@@ -1,11 +1,21 @@
-import { View, Text, StyleSheet, Button, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  TouchableHighlight,
+  ScrollView,
+  TouchableOpacity
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserName, logout } from '@/api/login/loginApi';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { loadTextbooks } from '@/api/textbook/textbookApi';
+import AddTextbookOverlay from '@/components/addTextbookOverlay';
 
 interface Textbook {
   id: string;
@@ -22,86 +32,110 @@ export default function HomeScreen() {
   const [username, setUsername] = useState('');
   const [textbooks, setTextbooks] = useState([]);
   const [hasTextbooks, setHasTextbooks] = useState(false);
+  const [addTextbookOverlayVisibile, setAddTextbookOverlayVisibile] = useState(false);
 
-  // get username if we don't already have it
-  if (username === '') {
-    getUserName().then((newUsername) => {
-      setUsername(newUsername);
-      console.log(username);
-    });
-  }
-
-  // load textbooks
-  if (!hasTextbooks) {
-    AsyncStorage.getItem('access_token')
-      .then((token) => {
-        if (!token) {
-          Alert.alert('failed to retrieve access token');
-        } else {
-          loadTextbooks(token).then((data: any) => {
-            let textbooksList = data.textbooks.map((x: any) => {
-              let textbookOut: Textbook = {
-                id: x.id ?? '',
-                title: x.title ?? '',
-                author: x.author ?? '',
-                subject: x.subject ?? '',
-                cover: x.cover,
-              };
-              return textbookOut;
-            });
-            setTextbooks(textbooksList);
-            setHasTextbooks(true);
-            console.log(textbooksList);
-            console.log(token);
-          });
-        }
-      })
-      .catch((error) => {
-        Alert.alert('failed to retrieve access token');
-        console.log(error.message);
+  useEffect(() => {
+    // get username if we don't already have it
+    if (username === '') {
+      getUserName().then((newUsername) => {
+        setUsername(newUsername);
+        console.log(username);
       });
-  }
+    } else if (!hasTextbooks) {
+      AsyncStorage.getItem('access_token')
+        .then((token) => {
+          if (!token) {
+            Alert.alert('failed to retrieve access token');
+          } else {
+            loadTextbooks(token).then((data: any) => {
+              let textbooksList = data.textbooks.map((x: any) => {
+                let textbookOut: Textbook = {
+                  id: x.id ?? '',
+                  title: x.title ?? '',
+                  author: x.author ?? '',
+                  subject: x.subject ?? '',
+                  cover: x.cover,
+                };
+                return textbookOut;
+              });
+
+              setTextbooks(textbooksList);
+              setHasTextbooks(true);
+              console.log(textbooksList);
+              console.log(token);
+            });
+          }
+        })
+        .catch((error) => {
+          Alert.alert('failed to retrieve access token');
+          console.log(error.message);
+        });
+    }
+  });
+
+  const addTextbook = () => {
+    setAddTextbookOverlayVisibile(true);
+  };
+
+  const onAddTextbookSubmit = (updated: boolean) => {
+    // update textbooks if necesary
+    if (updated) {
+      setHasTextbooks(false);
+    }
+
+    setAddTextbookOverlayVisibile(false);
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
-      <View style={styles.container}>
-        <Text style={styles.title}>Welcome {username}!</Text>
-        <Text style={styles.subtitle}>You are successfully logged in.</Text>
-      </View>
-      <View style={styles.textbookContainer}>
-        {textbooks.map((textbook: Textbook) => {
-          return (
-            <TouchableOpacity
-              key={textbook.id}
-              style={styles.textbook}
-              onPress={() =>
-                router.push({
-                  pathname: '/read/[id]',
-                  params: { id: textbook.id, title: textbook.title },
-                })
-              }
-            >
-              <Text style={styles.title}>{textbook.title}</Text>
-              <Text style={styles.subtitle}>{textbook.subject}</Text>
-              <Text style={styles.subtitle}>By {textbook.author}</Text>
-            </TouchableOpacity>
-          );
-        })}
-        <View style={styles.addTextbook}>
-          <Text style={styles.title}>Add new textbook</Text>
+
+    <ScrollView style={styles.scrollView}>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="light" />
+        <View style={styles.container}>
+          <Text style={styles.title}>Welcome {username}!</Text>
+          <Text style={styles.subtitle}>You are successfully logged in.</Text>
         </View>
-      </View>
-      <Button title="Test persistence" onPress={() => router.navigate('/')}></Button>
-      <Button title="Log out" onPress={logout}></Button>
-    </SafeAreaView>
+        <View style={styles.textbookContainer}>
+          {textbooks.map((textbook: Textbook) => {
+            return (
+              <TouchableOpacity
+                key={textbook.id}
+                style={styles.textbook}
+                onPress={() =>
+                  router.push({
+                    pathname: '/read/[id]',
+                    params: { id: textbook.id, title: textbook.title },
+                  })
+                }
+              >
+                <Text style={styles.title}>{textbook.title}</Text>
+                <Text style={styles.subtitle}>{textbook.subject}</Text>
+                <Text style={styles.subtitle}>By {textbook.author}</Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          <TouchableHighlight onPress={addTextbook} underlayColor="#4a4a4aff">
+            <View style={styles.addTextbook}>
+              <Text style={styles.title}>Add new textbook</Text>
+            </View>
+          </TouchableHighlight>
+          <AddTextbookOverlay
+            isVisible={addTextbookOverlayVisibile}
+            onClose={onAddTextbookSubmit}
+          />
+          
+        </View>
+        <Button title="Test persistence" onPress={() => router.navigate('/')}></Button>
+        <Button title="Log out" onPress={logout}></Button>
+      </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   container: {
     alignItems: 'center',
@@ -147,5 +181,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     color: '#A0A0A0',
+  },
+  scrollView: {
+    backgroundColor: '#121212',
   },
 });
