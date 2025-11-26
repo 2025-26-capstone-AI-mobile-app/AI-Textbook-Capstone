@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { Text, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ChapterReader() {
-  const { id, chapter } = useLocalSearchParams();
+  const { id, chapter, pageOffset } = useLocalSearchParams();
   const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
@@ -17,12 +17,27 @@ export default function ChapterReader() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await response.json();
-        setPdfUrl(data.pdf_url);
+
+        let url = data.pdf_url;
+        if (pageOffset) {
+          url = `${url}#page=${pageOffset}`;
+        }
+        setPdfUrl(url);
       }
     })();
-  }, [id, chapter]);
+  }, [id, chapter, pageOffset]);
 
   if (!pdfUrl) return <Text>Loading PDF...</Text>;
+
+  // Platform-specific rendering
+  if (Platform.OS === 'web') {
+    return (
+      <iframe
+        src={pdfUrl}
+        style={{ width: '100%', height: '100%', border: 'none' }}
+      />
+    );
+  }
 
   return <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />;
 }
