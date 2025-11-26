@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { Alert } from "react-native";
 
 export async function login(username: string, password: string) {
@@ -106,6 +108,28 @@ export async function register(username: string, email: string, password: string
     Alert.alert("Unexpected error", error.message);
     return;
   }
+}
+
+// Logs user out
+export async function logout(){
+  try {
+    // Remove name and token from storage
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('username');
+    router.replace('/login');
+  } catch(error: any) {
+    Alert.alert("Logout failed", error.message);
+  }
+
+}
+
+export async function getUserName(): Promise<string>{
+  let username: string | null = await AsyncStorage.getItem('username');
+  if(username){
+    return username;
+  }
+  
+  throw Error("Failed to retrieve username")
 }
 
 

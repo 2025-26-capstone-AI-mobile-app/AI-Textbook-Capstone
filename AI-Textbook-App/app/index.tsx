@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { router } from 'expo-router';
 
 export default function Index() {
+  // On load, check for access token and log in if it's present.
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((token) => {
       if (token) {

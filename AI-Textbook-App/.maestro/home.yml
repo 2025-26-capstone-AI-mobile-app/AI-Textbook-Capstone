@@ -1,0 +1,22 @@
+# tests that after a successful login, user's name and textbooks are
+# properly displayed
+
+appId: com.aitextbookcapstone.AITextbookApp
+---
+- launchApp
+- tapOn: "Enter your username"
+- inputText: "testmobile"
+- tapOn: "Enter your password"
+- inputText: "password"
+- tapOn: "Log In"
+- assertVisible: "Welcome testmobile!"
+- assertVisible: "High School Physics"
+- tapOn: "Log out"
+- tapOn: "Enter your username"
+- inputText: "testmobile2"
+- tapOn: "Enter your password"
+- inputText: "password1234"
+- tapOn: "Log In"
+- assertVisible: "Welcome testmobile2!"
+- assertNotVisible: "High School Physics"
+- tapOn: "Log out"
