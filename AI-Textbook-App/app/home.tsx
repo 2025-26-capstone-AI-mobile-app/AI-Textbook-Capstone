@@ -6,7 +6,7 @@ import {
   Alert,
   TouchableHighlight,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -87,7 +87,6 @@ export default function HomeScreen() {
   };
 
   return (
-
     <ScrollView style={styles.scrollView}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
@@ -106,8 +105,7 @@ export default function HomeScreen() {
                     pathname: '/read/[id]',
                     params: { id: textbook.id, title: textbook.title },
                   })
-                }
-              >
+                }>
                 <Text style={styles.title}>{textbook.title}</Text>
                 <Text style={styles.subtitle}>{textbook.subject}</Text>
                 <Text style={styles.subtitle}>By {textbook.author}</Text>
@@ -124,7 +122,6 @@ export default function HomeScreen() {
             isVisible={addTextbookOverlayVisibile}
             onClose={onAddTextbookSubmit}
           />
-          
         </View>
         <Button title="Test persistence" onPress={() => router.navigate('/')}></Button>
         <Button title="Log out" onPress={logout}></Button>

@@ -14,7 +14,7 @@ export default function ChapterReader() {
       if (id && chapter && token) {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/textbooks/${id}/chapters/${chapter}/pdf`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         const data = await response.json();
 
@@ -31,12 +31,7 @@ export default function ChapterReader() {
 
   // Platform-specific rendering
   if (Platform.OS === 'web') {
-    return (
-      <iframe
-        src={pdfUrl}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-      />
-    );
+    return <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />;
   }
 
   return <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />;
