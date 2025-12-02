@@ -1,7 +1,7 @@
 import { fetchChats, loadChat } from "@/api/chat/aiChatApi";
 import { ChatSession, Message } from "@/chatTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Alert, Button, TouchableOpacity, ScrollView, TextInput } from "react-native";
 import Modal from "react-native-modal"
 
@@ -25,6 +25,10 @@ export default function AIChatOverlay({
     // Chat variables
     const [chatTitle, setChatTitle] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
+    const [scrollOffset, setScrollOffset] = useState<number>(0); //used to auto scroll to bottom on load
+    const [chatViewHeight, setChatViewHeight] = useState<number>(0);
+    const chatRef = useRef(null);
+
 
 
     // Fetch all user chats
@@ -40,6 +44,13 @@ export default function AIChatOverlay({
             })
         }
     });
+
+    // Gets height of scrollview containing chat messages. Used to correctly offset scroll view
+    useLayoutEffect(() => {
+        chatRef.current?.measure((_x: number, _y: number, _width: number, height: number) => {
+            setChatViewHeight(height);
+        })
+    })
 
     // Opens chat given session id
     const openChat = async (chatId: string, title: string) => {
@@ -113,10 +124,14 @@ export default function AIChatOverlay({
                             <Button title='X' onPress={closeChat} color='black'></Button>
                         </View>
                     </View>
-                    <ScrollView style={styles.chatView}>
+                    <ScrollView 
+                        style={styles.chatView} 
+                        contentOffset={{x:0, y:scrollOffset}}
+                        ref={chatRef}
+                        onContentSizeChange={(_width, height) => {setScrollOffset(height-chatViewHeight)}}>
                         {messages.map((message: Message) => {
                             return (
-                                <View>
+                                <View key={message.id}>
                                     <View style={message.role === 'assistant' ? styles.assistantMessage : styles.userMessage}>
                                         <Text style={message.role === 'assistant' ? styles.assistantMessageText : styles.userMessageText}>
                                             {message.content}
