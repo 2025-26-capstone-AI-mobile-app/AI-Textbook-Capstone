@@ -1,8 +1,10 @@
-import { fetchChats, loadChat } from "@/api/chat/aiChatApi";
+import { fetchChats, loadChat, streamMessage } from "@/api/chat/aiChatApi";
 import { ChatSession, Message } from "@/chatTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Alert, Button, TouchableOpacity, ScrollView, TextInput } from "react-native";
+import Ionicons from '@expo/vector-icons/Ionicons'
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Modal from "react-native-modal"
 
 type Props = {
@@ -23,10 +25,14 @@ export default function AIChatOverlay({
     const [chatOpen, setChatOpen] = useState<boolean>(false);
 
     // Chat variables
-    const [chatTitle, setChatTitle] = useState<string>("");
+    const TEMP_MESSAGE_ID = "TEMPMSG"
+    const [chatTitle, setChatTitle] = useState<string>('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [scrollOffset, setScrollOffset] = useState<number>(0); //used to auto scroll to bottom on load
     const [chatViewHeight, setChatViewHeight] = useState<number>(0);
+    const [chatMessage, setChatMessage] = useState<string>('');
+    const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const chatRef = useRef(null);
 
 
@@ -58,6 +64,7 @@ export default function AIChatOverlay({
             setChatOpen(true);
             setChatTitle(title);
             setMessages(await loadChat(chatId));
+            setSessionId(chatId);
         } catch {
             setMessages([{
                 id:'', 
@@ -68,10 +75,63 @@ export default function AIChatOverlay({
         }
     }
 
+    // Opens empty chat
+    const openNewChat = async () => {
+        setChatOpen(true);
+        setChatTitle("New Chat");
+        setSessionId(null);
+    }
+
     // Closes chat window
     const closeChat = () => {
         setChatOpen(false);
+        setMessages([]);
+        setSessionId(null);
+        fetchChats().then((newChats) => setChats(newChats));
     }
+
+    // Sends whatever is in chatMessage to the backend
+    const sendMessage = async () => {
+        // ignore empty messages
+        if(chatMessage.length == 0) return;
+
+        // Disable chat textbox
+        setChatInputEnabled(false);
+
+        // Add user message and placeholder message to chat
+        const userMessage: Message = {id: Date.now().toString(), content: chatMessage, role: "user", timestamp: new Date()}
+        const tempMessage: Message = { id: TEMP_MESSAGE_ID, content: "", role: "assistant", timestamp: new Date() }
+        setMessages((messages) => [...messages, userMessage, tempMessage]);
+
+        try{
+            // Send message and update chat
+            let response = await streamMessage(chatMessage, textbookId, chapterId, sessionId);
+            setChatMessage("");
+
+            // A "branch" happens when the ai decideds the topic has changed
+            // I haven't seen it happen yet so not sure how to handle it.
+            if(response.branchCandiate){
+                console.log("Branch candidates found");
+                setChatTitle(response.branchCandiate.suggested_title);
+                setSessionId(response.branchCandiate.new_session_id);
+                fetchChats().then((newChats) => setChats(newChats));
+            } else if(response.session !== sessionId){
+                setSessionId(response.session);
+                fetchChats().then((newChats) => setChats(newChats));
+            }
+
+            setMessages((messages) => 
+                messages.map((msg) => msg.id === TEMP_MESSAGE_ID ? {...msg, id: Date.now().toString(), content: response.msg}: msg)
+            )
+        } catch(error){
+            // Print error to chat
+            console.error(error);
+            setMessages((messages) => 
+                messages.map((msg) => msg.id === TEMP_MESSAGE_ID ? {...msg, id: Date.now().toString(), content: "Error: failed to send message"}: msg)
+            )
+        }
+        setChatInputEnabled(true);
+    };
 
     return (
         <Modal 
@@ -89,6 +149,13 @@ export default function AIChatOverlay({
                 </View>
 
                 <ScrollView>
+                    {/* Create new chat button */}
+                    <TouchableOpacity 
+                        style={{...styles.chatSelector, ...styles.newChatButton}}
+                        onPress={openNewChat}>
+                        <Text style={styles.chatSelectorText}>Start new chat</Text>
+                    </TouchableOpacity>
+
                     {/* Show previous chats */}
                     {chats ? chats.map((session) => {
                         return (
@@ -101,10 +168,6 @@ export default function AIChatOverlay({
                             </TouchableOpacity>
                         )
                     }): [] }
-
-                    <TouchableOpacity style={styles.chatSelector}>
-                        <Text style={styles.chatSelectorText}>Start new chat</Text>
-                    </TouchableOpacity>
                 </ScrollView>
                 
             </View>
@@ -119,7 +182,9 @@ export default function AIChatOverlay({
                 <View style={styles.overlayContent}>
                     {/* Title and close button */}
                     <View style={styles.titleBar}>
-                        <Text style={styles.title}>{chatTitle}</Text>
+                        <Text style={styles.title}>{
+                            chatTitle.length < 30 ? chatTitle : chatTitle.substring(0, 30) + '...'
+                        }</Text>
                         <View style={styles.closeButton}>
                             <Button title='X' onPress={closeChat} color='black'></Button>
                         </View>
@@ -130,11 +195,15 @@ export default function AIChatOverlay({
                         ref={chatRef}
                         onContentSizeChange={(_width, height) => {setScrollOffset(height-chatViewHeight)}}>
                         {messages.map((message: Message) => {
+                            let content = message.content;
+                            if(message.id === TEMP_MESSAGE_ID){
+                                content = '...';
+                            }
                             return (
                                 <View key={message.id}>
                                     <View style={message.role === 'assistant' ? styles.assistantMessage : styles.userMessage}>
                                         <Text style={message.role === 'assistant' ? styles.assistantMessageText : styles.userMessageText}>
-                                            {message.content}
+                                            {content}
                                         </Text>
                                     </View>
                                     <Text style={message.role === 'assistant' ? styles.assistantTimeStampText : styles.userTimeStampText}>
@@ -145,7 +214,20 @@ export default function AIChatOverlay({
                             );
                         })}
                     </ScrollView>
-                    <TextInput></TextInput>
+                    <View style={styles.inputContainer}>  
+                        <TextInput 
+                            style={styles.chatInput}
+                            onChangeText={(text)=>setChatMessage(text)}
+                            value={chatMessage}
+                            editable={chatInputEnabled}/>
+                        <TouchableOpacity 
+                            style={styles.chatSendButton} 
+                            onPress={sendMessage}
+                            disabled={!chatInputEnabled}>
+                            <Ionicons name='send' size={24} color='white'/>
+                        </TouchableOpacity>
+                    </View>
+                    
                 </View>
 
                 
@@ -173,7 +255,6 @@ const styles = StyleSheet.create({
         fontSize: 30,
         color: 'white',
         fontWeight: 'bold'
-
     },
     titleBar:{
         flexDirection: 'row',
@@ -190,11 +271,16 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         color: 'white'
     },
+    newChatButton : {
+        paddingTop: 15,
+        paddingBottom: 15
+    },
     chatSelector: {
         borderBottomWidth: 1,
         borderBottomColor: 'white',
-        height: 50,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        paddingTop: 5,
+        paddingBottom: 5
     },
     chatSelectorText: {
         color: 'white',
@@ -209,6 +295,26 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 10,
         borderWidth: 1,
         borderColor: 'white'
+    },
+    chatInput: {
+        flex:1,
+        backgroundColor: '#2C2C2E',
+        borderRadius: 10,
+        height: 50,
+        paddingHorizontal: 16,
+        color: '#FFFFFF',
+        fontSize: 16,
+    },
+    chatSendButton: {
+        justifyContent: 'center',
+        alignContent: 'center',
+        height: 50,
+        width: 50,
+    },
+    inputContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        marginBottom: 30
     },
     assistantMessage: {
         maxWidth: '80%',
