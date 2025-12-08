@@ -21,6 +21,8 @@ export default function AIChatOverlay({
      closeFunc 
     }: Props) {
 
+    const [token, setToken] = useState<string>("");
+
     const [chats, setChats] = useState<ChatSession[] | null>(null);
     const [chatOpen, setChatOpen] = useState<boolean>(false);
 
@@ -35,19 +37,24 @@ export default function AIChatOverlay({
     const [sessionId, setSessionId] = useState<string | null>(null);
     const chatRef = useRef(null);
 
-
+    useEffect(() => {
+        AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
+    })
 
     // Fetch all user chats
     useEffect(() => {
         // Only call backend if chats has not been set
         if(chats === null){
-            setChats([]);
-            fetchChats().then((newChats) => {
-                setChats(newChats);
-            }).catch((error) => {
-                Alert.alert("Failed to fetch chats");
-                console.error(error);
-            })
+            AsyncStorage.getItem('access_token').then((t) => {
+                setToken(t ?? '');
+                setChats([]);
+                fetchChats(t ?? '').then((newChats) => {
+                    setChats(newChats);
+                }).catch((error) => {
+                    Alert.alert("Failed to fetch chats");
+                    console.error(error);
+                })
+            });
         }
     });
 
@@ -63,7 +70,7 @@ export default function AIChatOverlay({
         try {
             setChatOpen(true);
             setChatTitle(title);
-            setMessages(await loadChat(chatId));
+            setMessages(await loadChat(token, chatId));
             setSessionId(chatId);
         } catch {
             setMessages([{
@@ -87,7 +94,7 @@ export default function AIChatOverlay({
         setChatOpen(false);
         setMessages([]);
         setSessionId(null);
-        fetchChats().then((newChats) => setChats(newChats));
+        fetchChats(token).then((newChats) => setChats(newChats));
     }
 
     // Sends whatever is in chatMessage to the backend
@@ -105,20 +112,23 @@ export default function AIChatOverlay({
 
         try{
             // Send message and update chat
-            let response = await streamMessage(chatMessage, textbookId, chapterId, sessionId);
+            let response = await streamMessage(token, chatMessage, textbookId, chapterId, sessionId);
             setChatMessage("");
 
             // A "branch" happens when the ai decideds the topic has changed
-            // I haven't seen it happen yet so not sure how to handle it.
-            if(response.branchCandiate){
-                console.log("Branch candidates found");
-                setChatTitle(response.branchCandiate.suggested_title);
-                setSessionId(response.branchCandiate.new_session_id);
-                fetchChats().then((newChats) => setChats(newChats));
-            } else if(response.session !== sessionId){
-                setSessionId(response.session);
-                fetchChats().then((newChats) => setChats(newChats));
+            if(chatOpen){
+                console.log("test");
+                if(response.branchCandiate){
+                    console.log("Branch candidates found");
+                    setChatTitle(response.branchCandiate.suggested_title);
+                    setSessionId(response.branchCandiate.new_session_id);
+                    fetchChats(token).then((newChats) => setChats(newChats));
+                } else if(response.session !== sessionId){
+                    setSessionId(response.session);
+                    fetchChats(token).then((newChats) => setChats(newChats));
+                }
             }
+            
 
             setMessages((messages) => 
                 messages.map((msg) => msg.id === TEMP_MESSAGE_ID ? {...msg, id: Date.now().toString(), content: response.msg}: msg)
@@ -186,7 +196,12 @@ export default function AIChatOverlay({
                             chatTitle.length < 30 ? chatTitle : chatTitle.substring(0, 30) + '...'
                         }</Text>
                         <View style={styles.closeButton}>
-                            <Button title='X' onPress={closeChat} color='black'></Button>
+                            {/* 
+                                Button is disabled while waiting for Ai response because closing the
+                                chat before the response comes back causes issues. Not a great solution,
+                                but it works.
+                             */}
+                            <Button title='X' onPress={closeChat} color='black' disabled={!chatInputEnabled}></Button>
                         </View>
                     </View>
                     <ScrollView 

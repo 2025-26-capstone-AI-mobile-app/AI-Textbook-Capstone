@@ -1,12 +1,10 @@
 import { BranchCandidate, ChatSession, Message } from "@/chatTypes"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { fetch as expoFetch} from 'expo/fetch' ;
 
 
 const backendUrl = process.env.EXPO_PUBLIC_API_BASE_URL
-export async function fetchChats(): Promise<ChatSession[]>{
+export async function fetchChats(token: string): Promise<ChatSession[]>{
     try {
-        const token = await AsyncStorage.getItem('access_token')
         const res = await fetch(`${backendUrl}/chat/history`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         })
@@ -18,9 +16,8 @@ export async function fetchChats(): Promise<ChatSession[]>{
     }
 }
 
-export async function loadChat(sessionId: string): Promise<Message[]>{
+export async function loadChat(token: string, sessionId: string): Promise<Message[]>{
     try {
-        const token = await AsyncStorage.getItem("access_token")
         const res = await fetch(`${backendUrl}/chat/history?session_id=${sessionId}`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         })
@@ -65,9 +62,8 @@ interface ChatResponse{
 // chapter_id: id of chapter being discussed
 // session_id: id of current conversation. If null, starts new conversation
 // returns response message
-export async function streamMessage(message: string, textbook_id: string, chapter_id: string, session_id: string| null): Promise<ChatResponse>{
+export async function streamMessage(token: string , message: string, textbook_id: string, chapter_id: string, session_id: string| null): Promise<ChatResponse>{
   try {
-    const token = await AsyncStorage.getItem("access_token");
     const streamUrl = `${backendUrl}/chat/stream`
 
     // Pass through auth header if present
