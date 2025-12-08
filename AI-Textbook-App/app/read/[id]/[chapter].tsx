@@ -32,8 +32,6 @@ export default function ChapterReader() {
         if (data.text_content) {
         setChapterText(data.text_content);
         }
-        // TODO: If your API returns text, set it here:
-        // if (data.text_content) setChapterText(data.text_content);
       }
     })();
     
@@ -68,15 +66,15 @@ export default function ChapterReader() {
 
   return (
     <View style={styles.container}>
-      {/* PDF Viewer */}
+      {}
       {Platform.OS === 'web' ? (
         <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
       ) : (
         <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
       )}
 
-      {/* Floating Audio Button */}
-      <TouchableOpacity 
+      {}
+      <TouchableOpacity // Audio Button
         style={[
           styles.fab, 
           { backgroundColor: isSpeaking ? '#FF3B30' : '#007AFF' }
@@ -88,8 +86,8 @@ export default function ChapterReader() {
           size={24} 
           color="#FFF" 
         />
-        {/* Optional: Add text label if you want */}
-        {/* <Text style={styles.fabText}>{isSpeaking ? "Stop" : "Read"}</Text> */}
+        {}
+        {}
       </TouchableOpacity>
     </View>
   );
