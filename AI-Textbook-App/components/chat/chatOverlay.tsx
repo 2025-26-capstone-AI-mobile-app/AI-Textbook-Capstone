@@ -117,7 +117,6 @@ export default function AIChatOverlay({
 
             // A "branch" happens when the ai decideds the topic has changed
             if(chatOpen){
-                console.log("test");
                 if(response.branchCandiate){
                     console.log("Branch candidates found");
                     setChatTitle(response.branchCandiate.suggested_title);

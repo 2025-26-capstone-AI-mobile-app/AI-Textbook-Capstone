@@ -6,7 +6,7 @@ export async function loadTextbooks(authorization: string) {
     return null;
   }
   try {
-    const upstream = `${BACKEND_URL}/api/textbooks`;
+    const upstream = `${BACKEND_URL}/textbooks/list`;
     const token = authorization;
     const response = await fetch(upstream, {
       method: "GET",
@@ -40,7 +40,7 @@ export async function fetchTextbookContent(id: string, authorization: string) {
   if (!authorization || authorization === '') return null;
 
   try {
-    const upstream = `${BACKEND_URL}/api/textbooks/${id}`;
+    const upstream = `${BACKEND_URL}/textbooks/${id}`;
     const response = await fetch(upstream, {
       method: "GET",
       headers: {

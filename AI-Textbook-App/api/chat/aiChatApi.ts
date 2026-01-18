@@ -64,7 +64,13 @@ interface ChatResponse{
 // returns response message
 export async function streamMessage(token: string , message: string, textbook_id: string, chapter_id: string, session_id: string| null): Promise<ChatResponse>{
   try {
-    const streamUrl = `${backendUrl}/chat/stream`
+	let streamUrl: string;
+	if(session_id){
+		streamUrl = `${backendUrl}/chat/stream`
+	} else{
+		streamUrl = `${backendUrl}/chat/initiate`
+	}
+    
 
     // Pass through auth header if present
 
