@@ -56,6 +56,42 @@ interface ChatResponse{
 	msg: string
 }
 
+// Updates summary for an AI chat session. Needs to be called whenever a user finishes
+// a chat session
+// token: access token
+// session_id: id of current conversation
+// returns error message and status
+export async function updateChatSummary(token: string, session_id: string): Promise<{ok: boolean, msg: string}>{
+	try{
+		const url = `${backendUrl}/chat/update-summary-async`
+
+		// Set up headers
+		const headers: Record<string, string> = {
+			Accept: "text/event-stream",
+			"Cache-Control": "no-cache",
+			"Content-Type": "application/json",
+		}
+		headers["Authorization"] = `Bearer ${token}`;
+
+		// Send request
+		const backendResponse = await fetch(url, {
+			method: "POST",
+			headers: headers,
+			body: JSON.stringify({session_id: session_id}),
+		})
+
+		let data = await backendResponse.json();
+		if(data.status === "error"){
+			return {ok: false, msg: data.message};
+		}
+
+		return {ok: true, msg: ""};
+	} catch (error) {
+		console.error("Error updating chat summary:", error);
+		return {ok: false, msg: String(error)}
+  	}
+}
+
 // Sends message to LLM
 // Message: message to send
 // Textbook_id: id of the textbook being discussed
@@ -64,12 +100,7 @@ interface ChatResponse{
 // returns response message
 export async function streamMessage(token: string , message: string, textbook_id: string, chapter_id: string, session_id: string| null): Promise<ChatResponse>{
   try {
-	let streamUrl: string;
-	if(session_id){
-		streamUrl = `${backendUrl}/chat/stream`
-	} else{
-		streamUrl = `${backendUrl}/chat/initiate`
-	}
+	let streamUrl: string = `${backendUrl}/chat/stream`;
     
 
     // Pass through auth header if present

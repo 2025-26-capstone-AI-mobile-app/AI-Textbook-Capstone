@@ -1,4 +1,4 @@
-import { fetchChats, loadChat, streamMessage } from "@/api/chat/aiChatApi";
+import { fetchChats, loadChat, streamMessage, updateChatSummary } from "@/api/chat/aiChatApi";
 import { ChatSession, Message } from "@/chatTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -93,6 +93,7 @@ export default function AIChatOverlay({
     const closeChat = () => {
         setChatOpen(false);
         setMessages([]);
+        if(sessionId) updateChatSummary(token, sessionId);
         setSessionId(null);
         fetchChats(token).then((newChats) => setChats(newChats));
     }
