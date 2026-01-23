@@ -26,7 +26,7 @@ export async function addTextbookToLibrary(textbookCode: string, token: string):
         }
 
         // Make request to backend
-        const upstream = await fetch(`${BACKEND_URL}/api/user_books/add`, {
+        const upstream = await fetch(`${BACKEND_URL}/textbooks/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
