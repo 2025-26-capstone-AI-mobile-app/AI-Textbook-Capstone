@@ -3,11 +3,14 @@ import { useEffect, useState } from 'react';
 import { Text, Platform, View, StyleSheet, Button } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AIChatOverlay from '@/components/chat/chatOverlay';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
 
 export default function ChapterReader() {
-  const { id, chapter, pageOffset } = useLocalSearchParams<{id: string, chapter: string, pageOffset: string}>();
+  const { id, chapter, pageOffset } = useLocalSearchParams<{
+    id: string;
+    chapter: string;
+    pageOffset: string;
+  }>();
   const [pdfUrl, setPdfUrl] = useState('');
   const [aiOverlayVisible, setAiOverlayVisible] = useState(false);
 
@@ -43,25 +46,24 @@ export default function ChapterReader() {
         <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
       </View>
       <View style={styles.aiButton}>
-        <Button title='AI' onPress={() => setAiOverlayVisible(true)}></Button>
+        <Button title="AI" onPress={() => setAiOverlayVisible(true)}></Button>
       </View>
       <AIFeatureMenu
         isVisible={aiOverlayVisible}
         textbookId={id}
         chapterId={chapter}
-        closeFunc={() => setAiOverlayVisible(false)}/>
-      
+        closeFunc={() => setAiOverlayVisible(false)}
+      />
     </View>
-    
   );
 }
 
 const styles = StyleSheet.create({
   pageContent: {
-    height: '100%'
+    height: '100%',
   },
   webviewContainer: {
-    flex:1
+    flex: 1,
   },
   aiButton: {
     width: 100,
@@ -69,6 +71,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
-    backgroundColor: '#383737ff'
-  }
+    backgroundColor: '#383737ff',
+  },
 });
