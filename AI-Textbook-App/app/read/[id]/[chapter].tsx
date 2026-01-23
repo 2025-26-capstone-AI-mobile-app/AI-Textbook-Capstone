@@ -4,6 +4,7 @@ import { Text, Platform, View, StyleSheet, Button } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIChatOverlay from '@/components/chat/chatOverlay';
+import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
 
 export default function ChapterReader() {
   const { id, chapter, pageOffset } = useLocalSearchParams<{id: string, chapter: string, pageOffset: string}>();
@@ -44,7 +45,7 @@ export default function ChapterReader() {
       <View style={styles.aiButton}>
         <Button title='AI' onPress={() => setAiOverlayVisible(true)}></Button>
       </View>
-      <AIChatOverlay
+      <AIFeatureMenu
         isVisible={aiOverlayVisible}
         textbookId={id}
         chapterId={chapter}
