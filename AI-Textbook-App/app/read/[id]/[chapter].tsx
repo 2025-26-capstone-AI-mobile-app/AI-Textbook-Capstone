@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, Platform, View, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import { Text, Platform, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
@@ -46,13 +46,9 @@ export default function ChapterReader() {
       <View style={styles.webviewContainer}>
         <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
       </View>
-      <TouchableOpacity 
-        style={styles.aiButton} 
-        onPress={() => setAiOverlayVisible(true)}>
+      <TouchableOpacity style={styles.aiButton} onPress={() => setAiOverlayVisible(true)}>
         <AntDesign name="up" size={24} color="white" />
-        <Text style={styles.aiButtonText}>
-          AI
-        </Text>
+        <Text style={styles.aiButtonText}>AI</Text>
       </TouchableOpacity>
       <AIFeatureMenu
         isVisible={aiOverlayVisible}
@@ -72,15 +68,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   aiButton: {
-    width: "100%",
-    height:70,
-    marginTop:-15,
+    width: '100%',
+    height: 70,
+    marginTop: -15,
     borderRadius: 20,
     backgroundColor: '#383737ff',
     alignItems: 'center',
   },
   aiButtonText: {
     color: 'white',
-    fontSize: 20
-  }
+    fontSize: 20,
+  },
 });
