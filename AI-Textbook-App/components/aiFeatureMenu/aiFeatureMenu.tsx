@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 import Modal from 'react-native-modal';
 import AIChatOverlay from '../chat/chatOverlay';
+import AIQuizOverlay from '../quiz/quizOverlay';
 
 type Props = {
   isVisible: boolean;
@@ -15,6 +16,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   //feature list
   const FEATURE_NONE = 0;
   const FEATURE_CHAT = 1;
+  const FEATURE_QUIZ = 3;
 
   const [token, setToken] = useState<string>('');
   const [featureSelected, setFeatureSelected] = useState<number>(FEATURE_NONE);
@@ -23,11 +25,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });
 
-  const openChat = () => {
-    setFeatureSelected(FEATURE_CHAT);
-  };
-
-  const closeChat = () => {
+  const closeOverlay = () => {
     setFeatureSelected(FEATURE_NONE);
   };
 
@@ -44,8 +42,11 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
 
         <ScrollView>
           {/* Feature selectors */}
-          <TouchableOpacity style={styles.featureSelector} onPress={openChat}>
+          <TouchableOpacity style={styles.featureSelector} onPress={() => setFeatureSelected(FEATURE_CHAT)}>
             <Text style={styles.featureSelectorText}>AI Chat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.featureSelector} onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
+            <Text style={styles.featureSelectorText}>Quiz</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -53,7 +54,13 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
         isVisible={featureSelected === FEATURE_CHAT}
         textbookId={textbookId}
         chapterId={chapterId}
-        closeFunc={closeChat}
+        closeFunc={closeOverlay}
+      />
+      <AIQuizOverlay
+        isVisible={featureSelected === FEATURE_QUIZ}
+        textbookId={textbookId}
+        chapterId={chapterId}
+        closeFunc={closeOverlay}
       />
     </Modal>
   );

@@ -1,4 +1,4 @@
-import { BranchCandidate, ChatSession, Message } from "@/chatTypes"
+import { BranchCandidate, ChatSession, Message } from "@/types/chatTypes"
 import { fetch as expoFetch} from 'expo/fetch' ;
 
 
