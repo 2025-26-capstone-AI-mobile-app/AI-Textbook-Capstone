@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,13 @@ import {
   Button,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import Modal from 'react-native-modal';
-import { fetchQuizzes } from '@/api/quiz/aiQuizApi';
-import { Quiz } from '@/types/quizTypes';
+import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
+import { Question, Quiz, QuizResult } from '@/types/quizTypes';
+import SelectDropdown from 'react-native-select-dropdown'
+import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 
 type Props = {
   isVisible: boolean;
@@ -25,6 +27,21 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   const [token, setToken] = useState<string>('');
 
   const [quizzes, setQuizzes] = useState<Quiz[] | null>(null);
+  const [subChapters, setSubChapters] = useState<{title: string}[]>([]);
+  const [selectedSubChapter, setSelectedSubChapter] = useState<string>('');
+
+  const allowedQuestionCounts = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+  const [selectedQuestionCount, setSelectedQuestionCount] = useState<number>(5);
+
+  const [quizOpen, setQuizOpen] = useState<boolean>(false);
+  const [currentQuiz, setCurrentQuiz] = useState<Question[] | null>(null);
+  const [quizChoices, setQuizChoices] = useState<number[]>([]);
+  const [quizTitle, setQuizTitle] = useState<string>('');
+  const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
+  const [quizResult, setQuizResult] = useState<QuizResult>();
+
+  let quizScrollRef = createRef<ScrollView>();
+  let selectorRef = createRef<SelectDropdown>();
 
   const updateQuizzes = () => {
     fetchQuizzes(token).then((newQuizzes) => {
@@ -34,6 +51,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
       Alert.alert('Failed to fetch quizzes');
     })
   }
+
 
   // Get Token
   useEffect(() => {
@@ -47,12 +65,112 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     } 
   })
 
+  // Get subchapters
+  useEffect(() => {
+    if(subChapters.length === 0 && token.length > 0){
+      updateQuizList();
+    } 
+  })
+
+  const updateQuizList = () => {
+    fetchTextbookContent(textbookId, token).then((data: any) => {
+      if(data){
+        const newSubChapters = data.chapters[chapterId].sub_chapters;
+        setSubChapters(newSubChapters.map((subChapter: any) => ({title: subChapter.title})))
+      }
+    })
+  }
+
+  const createQuiz = () => {
+    if(selectedSubChapter){
+      generateQuiz(
+        token, 
+        "", 
+        selectedSubChapter, 
+        selectedQuestionCount,
+        chapterId,
+        textbookId).then(
+          (quiz) => {
+            openQuiz(quiz, selectedSubChapter);
+          }
+      )
+    } else {
+      Alert.alert("Please choose a subchapter");
+    }
+  }
+
+  const openQuiz = (quiz: Question[], title: string) =>{
+    setQuizTitle(title);
+    setShowCorrectAnswers(false);
+    setCurrentQuiz(quiz);
+    setQuizChoices(new Array(quiz.length).fill(-1));
+    setQuizOpen(true);
+  }
+
+  const closeQuiz = () => {
+    setQuizOpen(false);
+    setShowCorrectAnswers(false);
+    setCurrentQuiz(null);
+    setQuizChoices([]);
+    setQuizTitle('');
+  }
+
+  const gradeQuiz = () : QuizResult => {
+    if(!currentQuiz || quizChoices.length === 0)
+      return {correctAnswers: 0, totalQuestions: 0, grade: -1};
+
+    let numQuestions = quizChoices.length;
+    let correct = 0;
+    for(let i = 0; i < numQuestions; i++){
+      if(quizChoices[i] === currentQuiz[i].answer){
+        correct++;
+      }
+    }
+
+    return {correctAnswers: correct, totalQuestions: numQuestions, grade: correct/numQuestions};
+  }
+
+  const submitQuiz = () => {
+    quizScrollRef.current?.scrollTo({y:0});
+    setShowCorrectAnswers(true);
+    setQuizResult(gradeQuiz());
+  }
+
+  const resetQuiz = () => {
+    quizScrollRef.current?.scrollTo({y:0});
+    if(!currentQuiz)
+      return;
+    setShowCorrectAnswers(false);
+    setQuizChoices(new Array(currentQuiz.length).fill(-1));
+  }
+
+  const setQuizOptionColor = (qIndex: number, cIndex: number) => {
+    if(!currentQuiz)
+      return {};
+
+    if(showCorrectAnswers){
+      if(quizChoices[qIndex] === cIndex){ //this option has been selected by the user
+        if(cIndex === currentQuiz[qIndex].answer){ // user selected correct answer
+          return {backgroundColor: 'green'};
+        } else{
+          return {backgroundColor: 'orange'};
+        }
+      } else if(cIndex === currentQuiz[qIndex].answer) {
+        return {backgroundColor: 'green'};
+      }
+    } else if(quizChoices[qIndex] === cIndex){   //this option has been selected by the user
+      return {backgroundColor: '#007AFF'};
+    }
+
+    return {};
+  }
+
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
         {/* Title and close button */}
         <View style={styles.titleBar}>
-          <Text style={styles.title}>Quiz</Text>
+          <Text style={styles.title}>Create New Quiz</Text>
           <View style={styles.closeButton}>
             <Button title="X" onPress={closeFunc} color="black"></Button>
           </View>
@@ -60,17 +178,64 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
 
         {/* Quiz form */}
         <View>
-          <Text style={{...styles.subTitle}}>Generate New Quiz</Text>
+          <Text style={styles.subTitle}>Subchapter</Text>
+          <SelectDropdown
+            ref={selectorRef}
+            data={subChapters}
+            onSelect={(selectedItem)=>{setSelectedSubChapter(selectedItem.title)}}
+            renderButton={(selectedItem: {title: string}) =>(
+              <View style={styles.selectorButton}>
+                <Text style={styles.selectorButtonText}>
+                  {selectedItem ? selectedItem.title : 'Select a subchapter to focus on'}
+                </Text>
+              </View>
+            )}
+            renderItem={(item: {title: string}, index: number, isSelected: boolean) => (
+              <View style={{...styles.selectorItem, ...(isSelected && styles.selectedItem)}}>
+                <Text style={styles.selectorButtonText}>
+                  {item ? item.title : ''}
+                </Text>
+              </View>
+            )}></SelectDropdown>
+
+          <Text style={styles.subTitle}>Number of Questions</Text>
+          <SelectDropdown
+            ref={selectorRef}
+            data={allowedQuestionCounts}
+            defaultValue={5}
+            onSelect={(selectedItem)=>{setSelectedQuestionCount(selectedItem)}}
+            renderButton={(selectedItem) => (
+              <View style={styles.selectorButton}>
+                <Text style={styles.selectorButtonText}>
+                  {selectedItem}
+                </Text>
+              </View>
+            )}
+            renderItem={(item, index, isSelected) => (
+              <View style={{...styles.selectorItem, ...(isSelected && styles.selectedItem)}}>
+                <Text style={styles.selectorButtonText}>
+                  {item}
+                </Text>
+              </View>
+            )}></SelectDropdown>
+          
+          <View style={styles.submitButton}>
+            <Button 
+              color="white" 
+              background-color='#007AFF' 
+              title="Generate"
+              onPress={createQuiz}></Button>
+          </View>
         </View>
 
         {/* Previous quizzes */}
         <View>
-          <Text style={{...styles.subTitle,...styles.titleBar}}>Previous Quizzes</Text>
+          <Text style={{...styles.subTitle,...styles.titleBar}}>View Previous Quizzes</Text>
           <ScrollView>
             {quizzes && quizzes.map // I don't know why, but this doesn't work without quizzes.map
               ? quizzes.map((quiz) => {
                 return (
-                  <TouchableOpacity key={quiz._id} style={styles.quizSelector}>
+                  <TouchableOpacity key={quiz._id} style={styles.quizSelector} onPress={() => openQuiz(quiz.quiz, quiz.hint)}>
                     <Text style={styles.quizSelectorText}>{quiz.hint}</Text>
                     <Text style={styles.quizSelectorSubText}>{new Date(quiz.created_time * 1000).toLocaleString("en-US",{year:'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
                   </TouchableOpacity>
@@ -80,8 +245,68 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
         </View>
         
       </View>
-     
+
+      {/* Actual quiz */}
+      <Modal coverScreen={false} hasBackdrop={false} isVisible={quizOpen} style={styles.modal}>
+        <View style={styles.overlayContent}>
+          {/* Title and close button */}
+          <View style={styles.titleBar}>
+            <Text style={styles.title}>{quizTitle}</Text>
+            <View style={styles.closeButton}>
+              <Button title="X" onPress={closeQuiz} color="black"></Button>
+            </View>
+          </View>
+          {showCorrectAnswers ? <Text style={styles.subTitle}>Score {quizResult?.correctAnswers}/{quizResult?.totalQuestions}</Text>: []}
+
+          {/* Questions */}
+          <ScrollView
+            ref={quizScrollRef}>
+            {currentQuiz ? currentQuiz.map((question, index) => (
+              <View key={index} style={styles.questionView}>
+                <Text style={styles.subTitle}>{index + 1}. {question.question}</Text>
+                {(showCorrectAnswers && currentQuiz[index].answer === quizChoices[index]) ? 
+                  (<Text style={styles.correct}>Correct</Text>) : (showCorrectAnswers) ?
+                  (<Text style={styles.incorrect}>Incorrect</Text>) : []
+                }
+
+                {/* Options */}
+                {question.choices.map((choice, cIndex) => (
+                  <TouchableOpacity 
+                    style={{...styles.quizChoice, ...(setQuizOptionColor(index, cIndex))}} 
+                    key={cIndex}
+                    onPress={() => {quizChoices[index] = cIndex; setQuizChoices([...quizChoices])}}
+                    disabled={showCorrectAnswers}>
+                    <Text style={styles.quizChoiceText}>{choice}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )) : []}
+            <View style={styles.submitButton}>
+              <Button 
+                color="white" 
+                background-color='#007AFF' 
+                title="Submit"
+                onPress={submitQuiz}
+                disabled={quizChoices.filter((val) => val===-1).length > 0 || showCorrectAnswers}></Button>
+            </View>
+            {showCorrectAnswers ? (<View style={styles.submitButton}>
+              <Button 
+                color="white" 
+                background-color='#007AFF' 
+                title="Try again"
+                onPress={resetQuiz}></Button>
+            </View>): []}
+            
+            {quizChoices.filter((val) => val===-1).length > 0 ? (<Text style={styles.warning}>Please answer all questions</Text>): []}
+            
+            {/* This is just a spacer at the bottom */}
+            <View style={{height: 60}}></View>
+          </ScrollView>
+          
+        </View>
+      </Modal>
     </Modal>
+
   );
 }
 
@@ -108,6 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: 'white',
     fontWeight: 'bold',
+    marginTop: 10
   },
   titleBar: {
     flexDirection: 'row',
@@ -148,15 +374,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderWidth: 1,
     borderColor: 'white',
-  },
-  chatInput: {
-    flex: 1,
-    backgroundColor: '#2C2C2E',
-    borderRadius: 10,
-    height: 50,
-    paddingHorizontal: 16,
-    color: '#FFFFFF',
-    fontSize: 16,
   },
   chatSendButton: {
     justifyContent: 'center',
@@ -203,4 +420,82 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     color: 'white',
   },
+  selectorButton: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 10,
+    height: 50,
+    paddingHorizontal: 16,
+    color: '#FFFFFF',
+    fontSize: 16,
+    paddingRight: 50,
+    justifyContent: 'center'
+  },
+  selectorButtonText: {
+    color: 'white',
+    fontSize: 20
+  },
+  selectorItem: {
+    backgroundColor: '#2C2C2E',
+    height: 50,
+    paddingHorizontal: 16,
+    color: '#FFFFFF',
+    fontSize: 16,
+    paddingRight: 50,
+    justifyContent: 'center'
+  },
+  selectedItem: {
+    backgroundColor: '#38383a',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 10,
+    height: 50,
+    paddingHorizontal: 16,
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  submitButton: {
+    backgroundColor: '#007AFF',
+    color: 'white',
+    borderRadius: 10
+  },
+  questionView: {
+    backgroundColor: '#2C2C2E',
+    padding: 20,
+    paddingTop: 10,
+    margin: 5,
+    borderRadius: 10,
+    borderColor: '#4e4e52',
+    borderWidth: 1,
+    borderStyle: 'solid'
+  },
+  quizChoice:{
+    backgroundColor: '#383737ff',
+    margin: 5,
+    padding: 10,
+    borderRadius: 10,
+    borderColor: '#4e4e52',
+    borderWidth: 1,
+    borderStyle: 'solid'
+  },
+  quizChoiceText: {
+    color: 'white',
+    fontSize: 20,
+  },
+  quizSelectedChoice: {
+    backgroundColor: '#007AFF'
+  },
+  warning:{
+    color:'red',
+    textAlign: 'center'
+  },
+  correct:{
+    color:'green',
+    fontSize: 20,
+  },
+  incorrect:{
+    color:'red',
+    fontSize: 20,
+  }
 });

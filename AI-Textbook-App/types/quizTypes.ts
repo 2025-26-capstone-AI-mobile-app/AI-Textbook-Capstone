@@ -14,3 +14,9 @@ export interface Quiz{
     textbook_id: string,
     user: string
 }
+
+export interface QuizResult{
+    correctAnswers: number, 
+    totalQuestions: number, 
+    grade: number
+}
