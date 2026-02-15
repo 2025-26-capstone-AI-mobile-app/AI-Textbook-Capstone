@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
@@ -39,6 +40,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   const [quizTitle, setQuizTitle] = useState<string>('');
   const [showCorrectAnswers, setShowCorrectAnswers] = useState<boolean>(false);
   const [quizResult, setQuizResult] = useState<QuizResult>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   let quizScrollRef = createRef<ScrollView>();
   let selectorRef = createRef<SelectDropdown>();
@@ -49,6 +51,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     }).catch((reason) => {
       console.log(`Failed to fetch quizzes: ${reason}`);
       Alert.alert('Failed to fetch quizzes');
+      closeFunc();
     })
   }
 
@@ -72,6 +75,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     } 
   })
 
+  // Gets list of quizzes from the backend
   const updateQuizList = () => {
     fetchTextbookContent(textbookId, token).then((data: any) => {
       if(data){
@@ -81,8 +85,10 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     })
   }
 
+  // Generate new quiz
   const createQuiz = () => {
     if(selectedSubChapter){
+      setLoading(true);
       generateQuiz(
         token, 
         "", 
@@ -92,13 +98,17 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
         textbookId).then(
           (quiz) => {
             openQuiz(quiz, selectedSubChapter);
+            setLoading(false)
           }
-      )
+      ).catch(() => {
+        setLoading(false)
+      })
     } else {
       Alert.alert("Please choose a subchapter");
     }
   }
 
+  // Open Quiz overlay
   const openQuiz = (quiz: Question[], title: string) =>{
     setQuizTitle(title);
     setShowCorrectAnswers(false);
@@ -107,14 +117,17 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setQuizOpen(true);
   }
 
+  // Close quiz overlay
   const closeQuiz = () => {
     setQuizOpen(false);
     setShowCorrectAnswers(false);
     setCurrentQuiz(null);
     setQuizChoices([]);
     setQuizTitle('');
+    setLoading(false);
   }
 
+  // Grade the currently openned quiz
   const gradeQuiz = () : QuizResult => {
     if(!currentQuiz || quizChoices.length === 0)
       return {correctAnswers: 0, totalQuestions: 0, grade: -1};
@@ -144,6 +157,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setQuizChoices(new Array(currentQuiz.length).fill(-1));
   }
 
+  // Given the index of the question and the index of the choice, returns a color
   const setQuizOptionColor = (qIndex: number, cIndex: number) => {
     if(!currentQuiz)
       return {};
@@ -229,7 +243,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
         </View>
 
         {/* Previous quizzes */}
-        <View>
+        <View style={styles.flexBox}>
           <Text style={{...styles.subTitle,...styles.titleBar}}>View Previous Quizzes</Text>
           <ScrollView>
             {quizzes && quizzes.map // I don't know why, but this doesn't work without quizzes.map
@@ -245,6 +259,13 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
         </View>
         
       </View>
+
+      <Modal coverScreen={false} hasBackdrop={false} isVisible={loading} style={styles.modal}>
+        <View style={{...styles.overlayContent, ...styles.loadingView}}>
+          <ActivityIndicator style={{paddingRight: 20}} size='large' color="#007AFF"/>
+          <Text style={{...styles.loadingText}}>Loading...</Text>
+        </View>
+      </Modal>
 
       {/* Actual quiz */}
       <Modal coverScreen={false} hasBackdrop={false} isVisible={quizOpen} style={styles.modal}>
@@ -316,6 +337,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
+    display:'flex',
     height: '100%',
     width: '100%',
     backgroundColor: '#383737ff',
@@ -497,5 +519,18 @@ const styles = StyleSheet.create({
   incorrect:{
     color:'red',
     fontSize: 20,
+  },
+  flexBox:{
+    flex:1,
+  },
+  loadingView:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  loadingText:{
+    fontSize: 40,
+    color: 'white',
+    fontWeight: 'bold',
   }
 });

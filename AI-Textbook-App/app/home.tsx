@@ -48,6 +48,10 @@ export default function HomeScreen() {
             Alert.alert('failed to retrieve access token');
           } else {
             loadTextbooks(token).then((data: any) => {
+              if(!data){
+                Alert.alert("Failed to fetch textbooks")
+                return
+              }
               let textbooksList = data.textbooks.map((x: any) => {
                 let textbookOut: Textbook = {
                   id: x.id ?? '',
