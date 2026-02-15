@@ -48,9 +48,9 @@ export default function HomeScreen() {
             Alert.alert('failed to retrieve access token');
           } else {
             loadTextbooks(token).then((data: any) => {
-              if(data.is_authenticated != true){
-                Alert.alert("Your login has expired")
-                logout()
+              if (data.is_authenticated != true) {
+                Alert.alert('Your login has expired');
+                logout();
               }
               let textbooksList = data.textbooks.map((x: any) => {
                 let textbookOut: Textbook = {

@@ -45,22 +45,22 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   });
 
   const updateChats = (t?: string) => {
-    if(!t)
-      t = token
+    if (!t) t = token;
     fetchChats(t ?? '')
       .then((newChats) => {
-        if(typeof newChats === 'string'){
-          if(newChats === 'Invalid Token'){
-            Alert.alert("Login expired", "Please log back in",[
+        if (typeof newChats === 'string') {
+          if (newChats === 'Invalid Token') {
+            Alert.alert('Login expired', 'Please log back in', [
               {
-                text: "Ok",
-                onPress: () => logout()
-              }])
-          } else{
+                text: 'Ok',
+                onPress: () => logout(),
+              },
+            ]);
+          } else {
             Alert.alert('Failed to fetch chats');
             console.log(newChats);
           }
-        } else{
+        } else {
           setChats(newChats);
         }
       })
@@ -68,7 +68,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         Alert.alert('Failed to fetch chats');
         console.error(error);
       });
-  }
+  };
 
   // Fetch all user chats
   useEffect(() => {
@@ -95,13 +95,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       setChatOpen(true);
       setChatTitle(title);
       const resp = await loadChat(token, chatId);
-      if(typeof(resp) === 'string'){
-        Alert.alert("Login expired", "Please log back in",[
+      if (typeof resp === 'string') {
+        Alert.alert('Login expired', 'Please log back in', [
           {
-            text: "Ok",
-            onPress: () => logout()
-          }])
-      } else{
+            text: 'Ok',
+            onPress: () => logout(),
+          },
+        ]);
+      } else {
         setMessages(resp);
       }
       setSessionId(chatId);
@@ -174,13 +175,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         }
       }
 
-      if(response.session == null && response.msg === 'Invalid Token'){
-        Alert.alert("Login expired", "Please log back in",[
+      if (response.session == null && response.msg === 'Invalid Token') {
+        Alert.alert('Login expired', 'Please log back in', [
           {
-            text: "Ok",
-            onPress: () => logout()
-          }])
-        return
+            text: 'Ok',
+            onPress: () => logout(),
+          },
+        ]);
+        return;
       }
 
       setMessages((messages) =>
