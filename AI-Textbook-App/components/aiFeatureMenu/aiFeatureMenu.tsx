@@ -42,10 +42,14 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
 
         <ScrollView>
           {/* Feature selectors */}
-          <TouchableOpacity style={styles.featureSelector} onPress={() => setFeatureSelected(FEATURE_CHAT)}>
+          <TouchableOpacity
+            style={styles.featureSelector}
+            onPress={() => setFeatureSelected(FEATURE_CHAT)}>
             <Text style={styles.featureSelectorText}>AI Chat</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featureSelector} onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
+          <TouchableOpacity
+            style={styles.featureSelector}
+            onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
             <Text style={styles.featureSelectorText}>Quiz</Text>
           </TouchableOpacity>
         </ScrollView>

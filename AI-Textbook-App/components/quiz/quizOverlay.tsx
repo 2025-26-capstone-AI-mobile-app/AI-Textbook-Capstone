@@ -14,7 +14,7 @@ import {
 import Modal from 'react-native-modal';
 import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
 import { Question, Quiz, QuizResult } from '@/types/quizTypes';
-import SelectDropdown from 'react-native-select-dropdown'
+import SelectDropdown from 'react-native-select-dropdown';
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 
 type Props = {
@@ -28,10 +28,10 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   const [token, setToken] = useState<string>('');
 
   const [quizzes, setQuizzes] = useState<Quiz[] | null>(null);
-  const [subChapters, setSubChapters] = useState<{title: string}[]>([]);
+  const [subChapters, setSubChapters] = useState<{ title: string }[]>([]);
   const [selectedSubChapter, setSelectedSubChapter] = useState<string>('');
 
-  const allowedQuestionCounts = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+  const allowedQuestionCounts = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   const [selectedQuestionCount, setSelectedQuestionCount] = useState<number>(5);
 
   const [quizOpen, setQuizOpen] = useState<boolean>(false);
@@ -46,15 +46,16 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   let selectorRef = createRef<SelectDropdown>();
 
   const updateQuizzes = () => {
-    fetchQuizzes(token).then((newQuizzes) => {
-      setQuizzes(newQuizzes);
-    }).catch((reason) => {
-      console.log(`Failed to fetch quizzes: ${reason}`);
-      Alert.alert('Failed to fetch quizzes');
-      closeFunc();
-    })
-  }
-
+    fetchQuizzes(token)
+      .then((newQuizzes) => {
+        setQuizzes(newQuizzes);
+      })
+      .catch((reason) => {
+        console.log(`Failed to fetch quizzes: ${reason}`);
+        Alert.alert('Failed to fetch quizzes');
+        closeFunc();
+      });
+  };
 
   // Get Token
   useEffect(() => {
@@ -63,59 +64,53 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
 
   // Get old quizzes
   useEffect(() => {
-    if(quizzes === null){
+    if (quizzes === null) {
       updateQuizzes();
-    } 
-  })
+    }
+  });
 
   // Get subchapters
   useEffect(() => {
-    if(subChapters.length === 0 && token.length > 0){
+    if (subChapters.length === 0 && token.length > 0) {
       updateQuizList();
-    } 
-  })
+    }
+  });
 
   // Gets list of quizzes from the backend
   const updateQuizList = () => {
     fetchTextbookContent(textbookId, token).then((data: any) => {
-      if(data){
+      if (data) {
         const newSubChapters = data.chapters[chapterId].sub_chapters;
-        setSubChapters(newSubChapters.map((subChapter: any) => ({title: subChapter.title})))
+        setSubChapters(newSubChapters.map((subChapter: any) => ({ title: subChapter.title })));
       }
-    })
-  }
+    });
+  };
 
   // Generate new quiz
   const createQuiz = () => {
-    if(selectedSubChapter){
+    if (selectedSubChapter) {
       setLoading(true);
-      generateQuiz(
-        token, 
-        "", 
-        selectedSubChapter, 
-        selectedQuestionCount,
-        chapterId,
-        textbookId).then(
-          (quiz) => {
-            openQuiz(quiz, selectedSubChapter);
-            setLoading(false)
-          }
-      ).catch(() => {
-        setLoading(false)
-      })
+      generateQuiz(token, '', selectedSubChapter, selectedQuestionCount, chapterId, textbookId)
+        .then((quiz) => {
+          openQuiz(quiz, selectedSubChapter);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
     } else {
-      Alert.alert("Please choose a subchapter");
+      Alert.alert('Please choose a subchapter');
     }
-  }
+  };
 
   // Open Quiz overlay
-  const openQuiz = (quiz: Question[], title: string) =>{
+  const openQuiz = (quiz: Question[], title: string) => {
     setQuizTitle(title);
     setShowCorrectAnswers(false);
     setCurrentQuiz(quiz);
     setQuizChoices(new Array(quiz.length).fill(-1));
     setQuizOpen(true);
-  }
+  };
 
   // Close quiz overlay
   const closeQuiz = () => {
@@ -125,59 +120,60 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setQuizChoices([]);
     setQuizTitle('');
     setLoading(false);
-  }
+  };
 
   // Grade the currently openned quiz
-  const gradeQuiz = () : QuizResult => {
-    if(!currentQuiz || quizChoices.length === 0)
-      return {correctAnswers: 0, totalQuestions: 0, grade: -1};
+  const gradeQuiz = (): QuizResult => {
+    if (!currentQuiz || quizChoices.length === 0)
+      return { correctAnswers: 0, totalQuestions: 0, grade: -1 };
 
     let numQuestions = quizChoices.length;
     let correct = 0;
-    for(let i = 0; i < numQuestions; i++){
-      if(quizChoices[i] === currentQuiz[i].answer){
+    for (let i = 0; i < numQuestions; i++) {
+      if (quizChoices[i] === currentQuiz[i].answer) {
         correct++;
       }
     }
 
-    return {correctAnswers: correct, totalQuestions: numQuestions, grade: correct/numQuestions};
-  }
+    return { correctAnswers: correct, totalQuestions: numQuestions, grade: correct / numQuestions };
+  };
 
   const submitQuiz = () => {
-    quizScrollRef.current?.scrollTo({y:0});
+    quizScrollRef.current?.scrollTo({ y: 0 });
     setShowCorrectAnswers(true);
     setQuizResult(gradeQuiz());
-  }
+  };
 
   const resetQuiz = () => {
-    quizScrollRef.current?.scrollTo({y:0});
-    if(!currentQuiz)
-      return;
+    quizScrollRef.current?.scrollTo({ y: 0 });
+    if (!currentQuiz) return;
     setShowCorrectAnswers(false);
     setQuizChoices(new Array(currentQuiz.length).fill(-1));
-  }
+  };
 
   // Given the index of the question and the index of the choice, returns a color
   const setQuizOptionColor = (qIndex: number, cIndex: number) => {
-    if(!currentQuiz)
-      return {};
+    if (!currentQuiz) return {};
 
-    if(showCorrectAnswers){
-      if(quizChoices[qIndex] === cIndex){ //this option has been selected by the user
-        if(cIndex === currentQuiz[qIndex].answer){ // user selected correct answer
-          return {backgroundColor: 'green'};
-        } else{
-          return {backgroundColor: 'orange'};
+    if (showCorrectAnswers) {
+      if (quizChoices[qIndex] === cIndex) {
+        //this option has been selected by the user
+        if (cIndex === currentQuiz[qIndex].answer) {
+          // user selected correct answer
+          return { backgroundColor: 'green' };
+        } else {
+          return { backgroundColor: 'orange' };
         }
-      } else if(cIndex === currentQuiz[qIndex].answer) {
-        return {backgroundColor: 'green'};
+      } else if (cIndex === currentQuiz[qIndex].answer) {
+        return { backgroundColor: 'green' };
       }
-    } else if(quizChoices[qIndex] === cIndex){   //this option has been selected by the user
-      return {backgroundColor: '#007AFF'};
+    } else if (quizChoices[qIndex] === cIndex) {
+      //this option has been selected by the user
+      return { backgroundColor: '#007AFF' };
     }
 
     return {};
-  }
+  };
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -196,19 +192,19 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
           <SelectDropdown
             ref={selectorRef}
             data={subChapters}
-            onSelect={(selectedItem)=>{setSelectedSubChapter(selectedItem.title)}}
-            renderButton={(selectedItem: {title: string}) =>(
+            onSelect={(selectedItem) => {
+              setSelectedSubChapter(selectedItem.title);
+            }}
+            renderButton={(selectedItem: { title: string }) => (
               <View style={styles.selectorButton}>
                 <Text style={styles.selectorButtonText}>
                   {selectedItem ? selectedItem.title : 'Select a subchapter to focus on'}
                 </Text>
               </View>
             )}
-            renderItem={(item: {title: string}, index: number, isSelected: boolean) => (
-              <View style={{...styles.selectorItem, ...(isSelected && styles.selectedItem)}}>
-                <Text style={styles.selectorButtonText}>
-                  {item ? item.title : ''}
-                </Text>
+            renderItem={(item: { title: string }, index: number, isSelected: boolean) => (
+              <View style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
+                <Text style={styles.selectorButtonText}>{item ? item.title : ''}</Text>
               </View>
             )}></SelectDropdown>
 
@@ -217,26 +213,24 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
             ref={selectorRef}
             data={allowedQuestionCounts}
             defaultValue={5}
-            onSelect={(selectedItem)=>{setSelectedQuestionCount(selectedItem)}}
+            onSelect={(selectedItem) => {
+              setSelectedQuestionCount(selectedItem);
+            }}
             renderButton={(selectedItem) => (
               <View style={styles.selectorButton}>
-                <Text style={styles.selectorButtonText}>
-                  {selectedItem}
-                </Text>
+                <Text style={styles.selectorButtonText}>{selectedItem}</Text>
               </View>
             )}
             renderItem={(item, index, isSelected) => (
-              <View style={{...styles.selectorItem, ...(isSelected && styles.selectedItem)}}>
-                <Text style={styles.selectorButtonText}>
-                  {item}
-                </Text>
+              <View style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
+                <Text style={styles.selectorButtonText}>{item}</Text>
               </View>
             )}></SelectDropdown>
-          
+
           <View style={styles.submitButton}>
-            <Button 
-              color="white" 
-              background-color='#007AFF' 
+            <Button
+              color="white"
+              background-color="#007AFF"
               title="Generate"
               onPress={createQuiz}></Button>
           </View>
@@ -244,26 +238,39 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
 
         {/* Previous quizzes */}
         <View style={styles.flexBox}>
-          <Text style={{...styles.subTitle,...styles.titleBar}}>View Previous Quizzes</Text>
+          <Text style={{ ...styles.subTitle, ...styles.titleBar }}>View Previous Quizzes</Text>
           <ScrollView>
-            {quizzes && quizzes.map // I don't know why, but this doesn't work without quizzes.map
-              ? quizzes.map((quiz) => {
+            {quizzes && quizzes.map ? ( // I don't know why, but this doesn't work without quizzes.map
+              quizzes.map((quiz) => {
                 return (
-                  <TouchableOpacity key={quiz._id} style={styles.quizSelector} onPress={() => openQuiz(quiz.quiz, quiz.hint)}>
+                  <TouchableOpacity
+                    key={quiz._id}
+                    style={styles.quizSelector}
+                    onPress={() => openQuiz(quiz.quiz, quiz.hint)}>
                     <Text style={styles.quizSelectorText}>{quiz.hint}</Text>
-                    <Text style={styles.quizSelectorSubText}>{new Date(quiz.created_time * 1000).toLocaleString("en-US",{year:'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
+                    <Text style={styles.quizSelectorSubText}>
+                      {new Date(quiz.created_time * 1000).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
                   </TouchableOpacity>
                 );
-              }) : <Text>No Quizzes</Text>}
+              })
+            ) : (
+              <Text>No Quizzes</Text>
+            )}
           </ScrollView>
         </View>
-        
       </View>
 
       <Modal coverScreen={false} hasBackdrop={false} isVisible={loading} style={styles.modal}>
-        <View style={{...styles.overlayContent, ...styles.loadingView}}>
-          <ActivityIndicator style={{paddingRight: 20}} size='large' color="#007AFF"/>
-          <Text style={{...styles.loadingText}}>Loading...</Text>
+        <View style={{ ...styles.overlayContent, ...styles.loadingView }}>
+          <ActivityIndicator style={{ paddingRight: 20 }} size="large" color="#007AFF" />
+          <Text style={{ ...styles.loadingText }}>Loading...</Text>
         </View>
       </Modal>
 
@@ -277,57 +284,80 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
               <Button title="X" onPress={closeQuiz} color="black"></Button>
             </View>
           </View>
-          {showCorrectAnswers ? <Text style={styles.subTitle}>Score {quizResult?.correctAnswers}/{quizResult?.totalQuestions}</Text>: []}
+          {showCorrectAnswers ? (
+            <Text style={styles.subTitle}>
+              Score {quizResult?.correctAnswers}/{quizResult?.totalQuestions}
+            </Text>
+          ) : (
+            []
+          )}
 
           {/* Questions */}
-          <ScrollView
-            ref={quizScrollRef}>
-            {currentQuiz ? currentQuiz.map((question, index) => (
-              <View key={index} style={styles.questionView}>
-                <Text style={styles.subTitle}>{index + 1}. {question.question}</Text>
-                {(showCorrectAnswers && currentQuiz[index].answer === quizChoices[index]) ? 
-                  (<Text style={styles.correct}>Correct</Text>) : (showCorrectAnswers) ?
-                  (<Text style={styles.incorrect}>Incorrect</Text>) : []
-                }
+          <ScrollView ref={quizScrollRef}>
+            {currentQuiz
+              ? currentQuiz.map((question, index) => (
+                  <View key={index} style={styles.questionView}>
+                    <Text style={styles.subTitle}>
+                      {index + 1}. {question.question}
+                    </Text>
+                    {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
+                      <Text style={styles.correct}>Correct</Text>
+                    ) : showCorrectAnswers ? (
+                      <Text style={styles.incorrect}>Incorrect</Text>
+                    ) : (
+                      []
+                    )}
 
-                {/* Options */}
-                {question.choices.map((choice, cIndex) => (
-                  <TouchableOpacity 
-                    style={{...styles.quizChoice, ...(setQuizOptionColor(index, cIndex))}} 
-                    key={cIndex}
-                    onPress={() => {quizChoices[index] = cIndex; setQuizChoices([...quizChoices])}}
-                    disabled={showCorrectAnswers}>
-                    <Text style={styles.quizChoiceText}>{choice}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )) : []}
+                    {/* Options */}
+                    {question.choices.map((choice, cIndex) => (
+                      <TouchableOpacity
+                        style={{ ...styles.quizChoice, ...setQuizOptionColor(index, cIndex) }}
+                        key={cIndex}
+                        onPress={() => {
+                          quizChoices[index] = cIndex;
+                          setQuizChoices([...quizChoices]);
+                        }}
+                        disabled={showCorrectAnswers}>
+                        <Text style={styles.quizChoiceText}>{choice}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ))
+              : []}
             <View style={styles.submitButton}>
-              <Button 
-                color="white" 
-                background-color='#007AFF' 
+              <Button
+                color="white"
+                background-color="#007AFF"
                 title="Submit"
                 onPress={submitQuiz}
-                disabled={quizChoices.filter((val) => val===-1).length > 0 || showCorrectAnswers}></Button>
+                disabled={
+                  quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers
+                }></Button>
             </View>
-            {showCorrectAnswers ? (<View style={styles.submitButton}>
-              <Button 
-                color="white" 
-                background-color='#007AFF' 
-                title="Try again"
-                onPress={resetQuiz}></Button>
-            </View>): []}
-            
-            {quizChoices.filter((val) => val===-1).length > 0 ? (<Text style={styles.warning}>Please answer all questions</Text>): []}
-            
+            {showCorrectAnswers ? (
+              <View style={styles.submitButton}>
+                <Button
+                  color="white"
+                  background-color="#007AFF"
+                  title="Try again"
+                  onPress={resetQuiz}></Button>
+              </View>
+            ) : (
+              []
+            )}
+
+            {quizChoices.filter((val) => val === -1).length > 0 ? (
+              <Text style={styles.warning}>Please answer all questions</Text>
+            ) : (
+              []
+            )}
+
             {/* This is just a spacer at the bottom */}
-            <View style={{height: 60}}></View>
+            <View style={{ height: 60 }}></View>
           </ScrollView>
-          
         </View>
       </Modal>
     </Modal>
-
   );
 }
 
@@ -337,7 +367,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    display:'flex',
+    display: 'flex',
     height: '100%',
     width: '100%',
     backgroundColor: '#383737ff',
@@ -355,7 +385,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: 'white',
     fontWeight: 'bold',
-    marginTop: 10
+    marginTop: 10,
   },
   titleBar: {
     flexDirection: 'row',
@@ -450,11 +480,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     paddingRight: 50,
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   selectorButtonText: {
     color: 'white',
-    fontSize: 20
+    fontSize: 20,
   },
   selectorItem: {
     backgroundColor: '#2C2C2E',
@@ -463,7 +493,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     paddingRight: 50,
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   selectedItem: {
     backgroundColor: '#38383a',
@@ -480,7 +510,7 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: '#007AFF',
     color: 'white',
-    borderRadius: 10
+    borderRadius: 10,
   },
   questionView: {
     backgroundColor: '#2C2C2E',
@@ -490,47 +520,47 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: '#4e4e52',
     borderWidth: 1,
-    borderStyle: 'solid'
+    borderStyle: 'solid',
   },
-  quizChoice:{
+  quizChoice: {
     backgroundColor: '#383737ff',
     margin: 5,
     padding: 10,
     borderRadius: 10,
     borderColor: '#4e4e52',
     borderWidth: 1,
-    borderStyle: 'solid'
+    borderStyle: 'solid',
   },
   quizChoiceText: {
     color: 'white',
     fontSize: 20,
   },
   quizSelectedChoice: {
-    backgroundColor: '#007AFF'
+    backgroundColor: '#007AFF',
   },
-  warning:{
-    color:'red',
-    textAlign: 'center'
+  warning: {
+    color: 'red',
+    textAlign: 'center',
   },
-  correct:{
-    color:'green',
+  correct: {
+    color: 'green',
     fontSize: 20,
   },
-  incorrect:{
-    color:'red',
+  incorrect: {
+    color: 'red',
     fontSize: 20,
   },
-  flexBox:{
-    flex:1,
+  flexBox: {
+    flex: 1,
   },
-  loadingView:{
+  loadingView: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
-  loadingText:{
+  loadingText: {
     fontSize: 40,
     color: 'white',
     fontWeight: 'bold',
-  }
+  },
 });
