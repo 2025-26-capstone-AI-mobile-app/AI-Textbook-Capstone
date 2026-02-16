@@ -14,6 +14,34 @@ export default function ChapterReader() {
     chapterTitle?: string;
     pageOffset: string;
   }>();
+
+  // Set the header title immediately — prevents read/[id]/chapter
+  const title = chapterTitle ?? "Loading…";
+
+  return (
+    <>
+      <Stack.Screen options={{ title }} />
+      <ChapterContent
+        id={id}
+        chapter={chapter}
+        chapterTitle={chapterTitle}
+        pageOffset={pageOffset}
+      />
+    </>
+  );
+}
+
+function ChapterContent({
+  id,
+  chapter,
+  chapterTitle,
+  pageOffset,
+}: {
+  id: string;
+  chapter: string;
+  chapterTitle?: string;
+  pageOffset: string;
+}) {
   const [pdfUrl, setPdfUrl] = useState('');
   const [aiOverlayVisible, setAiOverlayVisible] = useState(false);
 
@@ -38,30 +66,34 @@ export default function ChapterReader() {
 
   if (!pdfUrl) return <Text>Loading PDF...</Text>;
 
-  // Platform-specific rendering
+  // Web
   if (Platform.OS === 'web') {
-    <Stack.Screen options={{ title: chapterTitle || `Chapter ${chapter}` }} />
-    return <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />;
+    return (
+      <>
+        <iframe
+          src={pdfUrl}
+          style={{ width: '100%', height: '100%', border: 'none' }}
+        />
+      </>
+    );
   }
 
+  // Mobile
   return (
-    <>
-      <Stack.Screen options={{ title: chapterTitle || `Chapter ${chapter}` }} />
-      <View style={styles.pageContent}>
-        <View style={styles.webviewContainer}>
-          <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
-        </View>
-        <View style={styles.aiButton}>
-          <Button title="AI" onPress={() => setAiOverlayVisible(true)}></Button>
-        </View>
-        <AIFeatureMenu
-          isVisible={aiOverlayVisible}
-          textbookId={id}
-          chapterId={chapter}
-          closeFunc={() => setAiOverlayVisible(false)}
-        />
+    <View style={styles.pageContent}>
+      <View style={styles.webviewContainer}>
+        <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
       </View>
-    </>
+      <View style={styles.aiButton}>
+        <Button title="AI" onPress={() => setAiOverlayVisible(true)} />
+      </View>
+      <AIFeatureMenu
+        isVisible={aiOverlayVisible}
+        textbookId={id}
+        chapterId={chapter}
+        closeFunc={() => setAiOverlayVisible(false)}
+      />
+    </View>
   );
 }
 

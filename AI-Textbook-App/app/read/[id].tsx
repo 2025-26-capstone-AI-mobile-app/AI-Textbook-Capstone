@@ -1,3 +1,4 @@
+// AI-Textbook-App/add/read/[id].tsx
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
@@ -19,85 +20,89 @@ export default function ReadTextbookScreen() {
     })();
   }, [id]);
 
-  if (!textbook) return <Text>Loading...</Text>;
+  const title = textbook?.title ?? "Loading…";
 
   return (
     <>
-      <Stack.Screen options={{ title: textbook.title }} />
-      <View style={styles.container}>
-        <Text style={styles.title}>{textbook.title}</Text>
-        <Text style={styles.subtitle}>By {textbook.author}</Text>
+      <Stack.Screen options={{ title }} />
+      {!textbook ? (
+        <Text>Loading...</Text>
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.title}>{textbook.title}</Text>
+          <Text style={styles.subtitle}>By {textbook.author}</Text>
 
-        <ScrollView style={styles.chapterList}>
-          {textbook.chapters.map((chapter: any, index: number) => (
-            <View key={chapter.id} style={styles.chapterCard}>
-              <View style={styles.chapterHeaderRow}>
-                {/* Expand/collapse toggle */}
-                <Pressable
-                  onPress={() =>
-                    setExpandedChapter(expandedChapter === chapter.id ? null : chapter.id)
-                  }
-                  style={({ pressed }) => [
-                    styles.chapterArrow,
-                    { backgroundColor: pressed ? '#2A2A2A' : 'transparent' },
-                  ]}>
-                  <Text style={styles.arrowText}>{expandedChapter === chapter.id ? '▼' : '▶'}</Text>
-                </Pressable>
+          <ScrollView style={styles.chapterList}>
+            {textbook.chapters.map((chapter: any, index: number) => (
+              <View key={chapter.id} style={styles.chapterCard}>
+                <View style={styles.chapterHeaderRow}>
+                  {/* Expand/collapse toggle */}
+                  <Pressable
+                    onPress={() =>
+                      setExpandedChapter(expandedChapter === chapter.id ? null : chapter.id)
+                    }
+                    style={({ pressed }) => [
+                      styles.chapterArrow,
+                      { backgroundColor: pressed ? '#2A2A2A' : 'transparent' },
+                    ]}>
+                    <Text style={styles.arrowText}>{expandedChapter === chapter.id ? '▼' : '▶'}</Text>
+                  </Pressable>
 
-                {/* Chapter title opens the chapter */}
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: '../read/[id]/[chapter]',
-                      params: {
-                        id: textbook._id,
-                        chapter: chapter.id,
-                        chapterTitle: chapter.title,
-                        pageOffset: 1, // open first page of chapter
-                      },
-                    })
-                  }
-                  style={({ pressed }) => [
-                    styles.chapterTitleWrapper,
-                    { backgroundColor: pressed ? '#2A2A2A' : 'transparent' },
-                  ]}>
-                  <Text style={styles.chapterTitle}>
-                    Chapter {index + 1}: {chapter.title}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* Subchapters dropdown */}
-              {expandedChapter === chapter.id && chapter.sub_chapters?.length > 0 && (
-                <View style={styles.subChapterList}>
-                  {chapter.sub_chapters.map((sub: any, index: number) => (
-                    <Pressable
-                      key={index}
-                      style={({ pressed }) => [
-                        styles.subChapterCard,
-                        { backgroundColor: pressed ? '#333333' : '#1E1E1E' },
-                      ]}
-                      onPress={() =>
-                        router.push({
-                          pathname: '../read/[id]/[chapter]',
-                          params: {
-                            id: textbook._id,
-                            chapter: chapter.id,
-                            chapterTitle: chapter.title,
-                            subchapter: sub.title,
-                            pageOffset: sub.pageOffset + 1,
-                          },
-                        })
-                      }>
-                      <Text style={styles.subChapterTitle}>• {sub.title}</Text>
-                    </Pressable>
-                  ))}
+                  {/* Chapter title opens the chapter */}
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: '../read/[id]/[chapter]',
+                        params: {
+                          id: textbook._id,
+                          chapter: chapter.id,
+                          chapterTitle: chapter.title,
+                          pageOffset: 1, // open first page of chapter
+                        },
+                      })
+                    }
+                    style={({ pressed }) => [
+                      styles.chapterTitleWrapper,
+                      { backgroundColor: pressed ? '#2A2A2A' : 'transparent' },
+                    ]}>
+                    <Text style={styles.chapterTitle}>
+                      Chapter {index + 1}: {chapter.title}
+                    </Text>
+                  </Pressable>
                 </View>
-              )}
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+
+                {/* Subchapters dropdown */}
+                {expandedChapter === chapter.id && chapter.sub_chapters?.length > 0 && (
+                  <View style={styles.subChapterList}>
+                    {chapter.sub_chapters.map((sub: any, index: number) => (
+                      <Pressable
+                        key={index}
+                        style={({ pressed }) => [
+                          styles.subChapterCard,
+                          { backgroundColor: pressed ? '#333333' : '#1E1E1E' },
+                        ]}
+                        onPress={() =>
+                          router.push({
+                            pathname: '../read/[id]/[chapter]',
+                            params: {
+                              id: textbook._id,
+                              chapter: chapter.id,
+                              chapterTitle: chapter.title,
+                              subchapter: sub.title,
+                              pageOffset: sub.pageOffset + 1,
+                            },
+                          })
+                        }>
+                        <Text style={styles.subChapterTitle}>• {sub.title}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </>
   );
 }
