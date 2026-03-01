@@ -15,6 +15,7 @@ import Modal from 'react-native-modal';
 import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
 import { Question, Quiz, QuizResult } from '@/types/quizTypes';
 import SelectDropdown from 'react-native-select-dropdown';
+import { SelectList } from 'react-native-dropdown-select-list'
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 
 type Props = {
@@ -80,7 +81,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   const updateQuizList = () => {
     fetchTextbookContent(textbookId, token).then((data: any) => {
       if (data) {
-        const newSubChapters = data.chapters[chapterId].sub_chapters;
+        const newSubChapters = data.chapters.find((c: any) => c.id == chapterId).sub_chapters;
         setSubChapters(newSubChapters.map((subChapter: any) => ({ title: subChapter.title })));
       }
     });
@@ -188,28 +189,55 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
 
         {/* Quiz form */}
         <View>
-          <Text style={styles.subTitle}>Subchapter</Text>
-          <SelectDropdown
-            ref={selectorRef}
-            data={subChapters}
-            onSelect={(selectedItem) => {
-              setSelectedSubChapter(selectedItem.title);
-            }}
-            renderButton={(selectedItem: { title: string }) => (
-              <View style={styles.selectorButton}>
-                <Text style={styles.selectorButtonText}>
-                  {selectedItem ? selectedItem.title : 'Select a subchapter to focus on'}
-                </Text>
-              </View>
-            )}
-            renderItem={(item: { title: string }, index: number, isSelected: boolean) => (
-              <View style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
-                <Text style={styles.selectorButtonText}>{item ? item.title : ''}</Text>
-              </View>
-            )}></SelectDropdown>
+          <Text style={styles.subTitle}>Subchapter </Text>
+          {subChapters.length > 0 ? <Text testID='testText'></Text>: []}
+          <SelectList 
+            setSelected={(val) => setSelectedSubChapter(val)} 
+            data={subChapters.map((c) => ({key: c.title, value: c.title}))} 
+            save="value"
+            boxStyles={styles.selectorButton}
+            inputStyles={styles.selectorButtonText}
+            dropdownTextStyles={styles.selectorButtonText}
+            arrowicon={<></>} 
+            searchicon={<View testID='searchIcon'/>} // Should change this later. Test id is required though
+          />
+
+          {/**  <SelectDropdown
+          //   testID='subChapterDropDown'
+          //   ref={selectorRef}
+          //   data={subChapters}
+          //   onSelect={(selectedItem) => {
+          //     setSelectedSubChapter(selectedItem.title);
+          //   }}
+          //   renderButton={(selectedItem: { title: string }) => (
+          //     <View style={styles.selectorButton} testID='subChapterDropDownButton'>
+          //       <Text style={styles.selectorButtonText}>
+          //         {selectedItem ? selectedItem.title : 'Select a subchapter to focus on'}
+          //       </Text>
+          //     </View>
+          //   )}
+          //   renderItem={(item: { title: string }, index: number, isSelected: boolean) => (
+          //     <View testID={'dropDownItem:' + index} style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
+          //       <Text style={styles.selectorButtonText}>{item ? item.title : ''}</Text>
+          //     </View>
+          //   )}></SelectDropdown> */}
 
           <Text style={styles.subTitle}>Number of Questions</Text>
-          <SelectDropdown
+          <SelectList
+            setSelected={(val) => setSelectedQuestionCount(val)} 
+            data={allowedQuestionCounts.map((c) => ({key: c, value: c + ''}))} 
+            save="key"
+            boxStyles={styles.selectorButton}
+            inputStyles={styles.selectorButtonText}
+            dropdownTextStyles={styles.selectorButtonText}
+            arrowicon={<></>} 
+            searchicon={<View testID='searchIcon'/>} 
+            defaultOption={{key: 5, value: '5'}}
+          />
+
+
+
+          {/*<SelectDropdown
             ref={selectorRef}
             data={allowedQuestionCounts}
             defaultValue={5}
@@ -225,10 +253,11 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
               <View style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
                 <Text style={styles.selectorButtonText}>{item}</Text>
               </View>
-            )}></SelectDropdown>
+            )}></SelectDropdown>*/}
 
           <View style={styles.submitButton}>
             <Button
+              testID='GenerateButton'
               color="white"
               background-color="#007AFF"
               title="Generate"
@@ -276,7 +305,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
 
       {/* Actual quiz */}
       <Modal coverScreen={false} hasBackdrop={false} isVisible={quizOpen} style={styles.modal}>
-        <View style={styles.overlayContent}>
+        <View testID='openQuiz' style={styles.overlayContent}>
           {/* Title and close button */}
           <View style={styles.titleBar}>
             <Text style={styles.title}>{quizTitle}</Text>
@@ -285,7 +314,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
             </View>
           </View>
           {showCorrectAnswers ? (
-            <Text style={styles.subTitle}>
+            <Text style={styles.subTitle} testID={'testResults:' + quizResult?.correctAnswers + '/' + quizResult?.totalQuestions}>
               Score {quizResult?.correctAnswers}/{quizResult?.totalQuestions}
             </Text>
           ) : (
@@ -297,13 +326,13 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
             {currentQuiz
               ? currentQuiz.map((question, index) => (
                   <View key={index} style={styles.questionView}>
-                    <Text style={styles.subTitle}>
+                    <Text testID={"Q"+(index + 1)} style={styles.subTitle}>
                       {index + 1}. {question.question}
                     </Text>
                     {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
-                      <Text style={styles.correct}>Correct</Text>
+                      <Text testID={"Q"+(index + 1) + 'T'} style={styles.correct}>Correct</Text>
                     ) : showCorrectAnswers ? (
-                      <Text style={styles.incorrect}>Incorrect</Text>
+                      <Text testID={"Q"+(index + 1) + 'F'} style={styles.incorrect}>Incorrect</Text>
                     ) : (
                       []
                     )}
@@ -317,7 +346,8 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
                           quizChoices[index] = cIndex;
                           setQuizChoices([...quizChoices]);
                         }}
-                        disabled={showCorrectAnswers}>
+                        disabled={showCorrectAnswers}
+                        testID={"Q"+(index + 1)+"C"+cIndex}>
                         <Text style={styles.quizChoiceText}>{choice}</Text>
                       </TouchableOpacity>
                     ))}
@@ -332,7 +362,8 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
                 onPress={submitQuiz}
                 disabled={
                   quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers
-                }></Button>
+                }
+                testID='SubmitButton'></Button>
             </View>
             {showCorrectAnswers ? (
               <View style={styles.submitButton}>
@@ -340,7 +371,8 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
                   color="white"
                   background-color="#007AFF"
                   title="Try again"
-                  onPress={resetQuiz}></Button>
+                  onPress={resetQuiz}
+                  testID='resetButton'></Button>
               </View>
             ) : (
               []
@@ -481,10 +513,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingRight: 50,
     justifyContent: 'center',
+    alignContent: 'center',
+    flexDirection: 'column'
   },
   selectorButtonText: {
     color: 'white',
     fontSize: 20,
+    textAlign: 'center'
   },
   selectorItem: {
     backgroundColor: '#2C2C2E',
