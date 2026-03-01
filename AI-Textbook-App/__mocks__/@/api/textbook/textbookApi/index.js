@@ -1,7 +1,3 @@
-export async function fetchTextbookContent(textbookId, token) {
-    return exampleTextbook
-}
-
 let exampleTextbook = {
   "_id": "852f0488-7903-4555-bf5e-a7618f2552ff",
   "author": "Research Methods Team",
@@ -360,4 +356,9 @@ let exampleTextbook = {
   "title": "Research Methods in Psychology",
   "updated_at": "2025-10-02T10:40:13.075568+00:00",
   "code": "PSYCH1"
+}
+
+
+export async function fetchTextbookContent(textbookId, token) {
+    return exampleTextbook
 }
