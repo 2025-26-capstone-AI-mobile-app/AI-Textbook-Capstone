@@ -78,7 +78,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   const updateQuizList = () => {
     fetchTextbookContent(textbookId, token).then((data: any) => {
       if (data) {
-        const newSubChapters = data.chapters.find((c: any) => ("" + c.id) === chapterId).sub_chapters;
+        const newSubChapters = data.chapters.find((c: any) => '' + c.id === chapterId).sub_chapters;
         setSubChapters(newSubChapters.map((subChapter: any) => ({ title: subChapter.title })));
       }
     });
