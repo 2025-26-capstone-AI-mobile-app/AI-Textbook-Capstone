@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Modal from 'react-native-modal';
+import { logout } from '@/api/login/loginApi';
 
 type Props = {
   isVisible: boolean;
@@ -43,6 +44,32 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });
 
+  const updateChats = (t?: string) => {
+    if (!t) t = token;
+    fetchChats(t ?? '')
+      .then((newChats) => {
+        if (typeof newChats === 'string') {
+          if (newChats === 'Invalid Token') {
+            Alert.alert('Login expired', 'Please log back in', [
+              {
+                text: 'Ok',
+                onPress: () => logout(),
+              },
+            ]);
+          } else {
+            Alert.alert('Failed to fetch chats');
+            console.log(newChats);
+          }
+        } else {
+          setChats(newChats);
+        }
+      })
+      .catch((error) => {
+        Alert.alert('Failed to fetch chats');
+        console.error(error);
+      });
+  };
+
   // Fetch all user chats
   useEffect(() => {
     // Only call backend if chats has not been set
@@ -50,14 +77,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       AsyncStorage.getItem('access_token').then((t) => {
         setToken(t ?? '');
         setChats([]);
-        fetchChats(t ?? '')
-          .then((newChats) => {
-            setChats(newChats);
-          })
-          .catch((error) => {
-            Alert.alert('Failed to fetch chats');
-            console.error(error);
-          });
+        updateChats(t ?? '');
       });
     }
   });
@@ -74,7 +94,17 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     try {
       setChatOpen(true);
       setChatTitle(title);
-      setMessages(await loadChat(token, chatId));
+      const resp = await loadChat(token, chatId);
+      if (typeof resp === 'string') {
+        Alert.alert('Login expired', 'Please log back in', [
+          {
+            text: 'Ok',
+            onPress: () => logout(),
+          },
+        ]);
+      } else {
+        setMessages(resp);
+      }
       setSessionId(chatId);
     } catch {
       setMessages([
@@ -101,7 +131,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     setMessages([]);
     if (sessionId) updateChatSummary(token, sessionId);
     setSessionId(null);
-    fetchChats(token).then((newChats) => setChats(newChats));
+    updateChats();
   };
 
   // Sends whatever is in chatMessage to the backend
@@ -138,11 +168,21 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           console.log('Branch candidates found');
           setChatTitle(response.branchCandiate.suggested_title);
           setSessionId(response.branchCandiate.new_session_id);
-          fetchChats(token).then((newChats) => setChats(newChats));
+          updateChats();
         } else if (response.session !== sessionId) {
           setSessionId(response.session);
-          fetchChats(token).then((newChats) => setChats(newChats));
+          updateChats();
         }
+      }
+
+      if (response.session == null && response.msg === 'Invalid Token') {
+        Alert.alert('Login expired', 'Please log back in', [
+          {
+            text: 'Ok',
+            onPress: () => logout(),
+          },
+        ]);
+        return;
       }
 
       setMessages((messages) =>
