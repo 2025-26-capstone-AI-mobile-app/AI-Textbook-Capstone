@@ -40,6 +40,9 @@ List prerequisites, setup steps, environment variables/secrets handling, and how
     * ```npm run android``` - requires android emulator
 * If you're running an emulator, the app should automatically open in the emulator. If you're using a mobile device, use the first option and scan the QR code.
 
+### Running the backend
+We are using https://github.com/2025-26-capstone-AI-mobile-app/OER_tutor as the backend for our mobile app. Please follow the instructions listed on their repository to run the backend.
+
 ## Branching & Workflow
 
 Describe the workflow (e.g., trunk-based or GitFlow), default branch, branch naming, and when to rebase vs. merge.
@@ -104,11 +107,11 @@ We are using ESLint and Prettier for formatting/linting. The config file is ```.
 
 Define required test types, how to run tests, expected coverage thresholds, and when new/updated tests are mandatory.
 
-We are still deciding on a testing solution, but we intend to have the following tests:
-* Unit tests
+We are using Jest and Maestro for unit and end to end tests respectively:
+* Jest unit tests
     * Should be added whenever a new feature is added
     * Should be updated whenever bugs are found with existing features, or existing features are altered.
-* End to End tests
+* Maestro End to End tests
     * Should be added whenever new UI elements are introduced
     * Should be updated whenever UI is altered significantly
 
@@ -132,7 +135,7 @@ Pull request template is in PULL_REQUEST_TEMPLATE.md and includes a self check c
 
 Link to pipeline definitions, list mandatory jobs, how to view logs/re-run jobs, and what must pass before merge/release.
 
-We do not currently have CI jobs set up, but we intend to have jobs for running unit tests, linter, security scan, and checking formatting on pull request.
+Our CI pipeline runs whenever a pull request is made. It checks that formatting is correct using eslint, and ensures that all unit tests are passing before the pull request is allowed to be merged. The workflow is in .github/workflows/node.js.yml
 
 ## Security & Secrets
 
