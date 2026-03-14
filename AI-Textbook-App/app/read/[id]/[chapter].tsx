@@ -1,9 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, Platform, View, StyleSheet, Button } from 'react-native';
+import { Text, Platform, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function ChapterReader() {
   const { id, chapter, pageOffset } = useLocalSearchParams<{
@@ -45,9 +46,10 @@ export default function ChapterReader() {
       <View style={styles.webviewContainer}>
         <WebView source={{ uri: pdfUrl }} style={{ flex: 1 }} />
       </View>
-      <View style={styles.aiButton}>
-        <Button title="AI" onPress={() => setAiOverlayVisible(true)}></Button>
-      </View>
+      <TouchableOpacity style={styles.aiButton} onPress={() => setAiOverlayVisible(true)}>
+        <AntDesign name="up" size={24} color="white" />
+        <Text style={styles.aiButtonText}>AI</Text>
+      </TouchableOpacity>
       <AIFeatureMenu
         isVisible={aiOverlayVisible}
         textbookId={id}
@@ -66,11 +68,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   aiButton: {
-    width: 100,
+    width: '100%',
+    height: 70,
+    marginTop: -15,
     borderRadius: 20,
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
     backgroundColor: '#383737ff',
+    alignItems: 'center',
+  },
+  aiButtonText: {
+    color: 'white',
+    fontSize: 20,
   },
 });

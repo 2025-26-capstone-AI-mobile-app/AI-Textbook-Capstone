@@ -1,5 +1,5 @@
 import { fetchChats, loadChat, streamMessage, updateChatSummary } from '@/api/chat/aiChatApi';
-import { ChatSession, Message } from '@/chatTypes';
+import { ChatSession, Message } from '@/types/chatTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '75%',
+    height: '100%',
     width: '100%',
     backgroundColor: '#383737ff',
     marginTop: 'auto',
