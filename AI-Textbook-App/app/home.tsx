@@ -52,6 +52,11 @@ export default function HomeScreen() {
                 Alert.alert('Failed to fetch textbooks');
                 return;
               }
+              if (data.is_authenticated != true) {
+                Alert.alert('Your login has expired');
+                logout();
+                return;
+              }
               let textbooksList = data.textbooks.map((x: any) => {
                 let textbookOut: Textbook = {
                   id: x.id ?? '',
