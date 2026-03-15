@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 import Modal from 'react-native-modal';
 import AIChatOverlay from '../chat/chatOverlay';
+import FlashcardConfigOverlay from '../flashcards/flashcardConfigOverlay';
 import AIQuizOverlay from '../quiz/quizOverlay';
 
 type Props = {
@@ -16,6 +17,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   //feature list
   const FEATURE_NONE = 0;
   const FEATURE_CHAT = 1;
+  const FEATURE_FLASHCARDS = 2;
   const FEATURE_QUIZ = 3;
 
   const [token, setToken] = useState<string>('');
@@ -26,6 +28,14 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   });
 
   const closeOverlay = () => {
+    setFeatureSelected(FEATURE_NONE);
+  };
+
+  const openFlashcards = () => {
+    setFeatureSelected(FEATURE_FLASHCARDS);
+  };
+
+  const closeFlashcards = () => {
     setFeatureSelected(FEATURE_NONE);
   };
 
@@ -47,6 +57,10 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
             onPress={() => setFeatureSelected(FEATURE_CHAT)}>
             <Text style={styles.featureSelectorText}>AI Chat</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.featureSelector} onPress={openFlashcards}>
+            <Text style={styles.featureSelectorText}>AI Flashcards</Text>
+            <Text style={styles.featureSelectorSubText}>Generate study flashcards</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.featureSelector}
             onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
@@ -65,6 +79,13 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
         textbookId={textbookId}
         chapterId={chapterId}
         closeFunc={closeOverlay}
+      />
+
+      <FlashcardConfigOverlay
+        isVisible={featureSelected === FEATURE_FLASHCARDS}
+        textbookId={textbookId}
+        chapterId={chapterId}
+        closeFunc={closeFlashcards}
       />
     </Modal>
   );
@@ -118,5 +139,6 @@ const styles = StyleSheet.create({
   featureSelectorSubText: {
     color: 'grey',
     fontSize: 15,
+    marginTop: 5,
   },
 });
