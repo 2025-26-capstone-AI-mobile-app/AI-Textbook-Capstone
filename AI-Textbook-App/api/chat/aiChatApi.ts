@@ -1,26 +1,32 @@
-import { BranchCandidate, ChatSession, Message } from "@/chatTypes"
+import { BranchCandidate, ChatSession, Message } from "@/types/chatTypes"
 import { fetch as expoFetch} from 'expo/fetch' ;
 
 
 const backendUrl = process.env.EXPO_PUBLIC_API_BASE_URL
-export async function fetchChats(token: string): Promise<ChatSession[]>{
+export async function fetchChats(token: string): Promise<ChatSession[] | string>{
     try {
         const res = await fetch(`${backendUrl}/chat/history`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         })
+		if(res.status == 401){
+			return 'Invalid Token'
+		}
         const data = await res.json()
         return data.chats || []
     } catch (e) {
         console.error("Failed to load chats", e)
-        return [];
+        return `Error: ${e}`;
     }
 }
 
-export async function loadChat(token: string, sessionId: string): Promise<Message[]>{
+export async function loadChat(token: string, sessionId: string): Promise<Message[] | string>{
     try {
         const res = await fetch(`${backendUrl}/chat/history?session_id=${sessionId}`, {
             headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         })
+		if(res.status == 401){
+			return 'Invalid Token'
+		}
         const data = await res.json()
 
         // Backend now returns: { session_id, title, summary, messages }
@@ -129,6 +135,9 @@ export async function streamMessage(token: string , message: string, textbook_id
       const errorText = await backendResponse.text()
       console.error("Backend stream error:", backendResponse.status, errorText)
 
+	  if(backendResponse.status == 401){
+		return {session: null,branchCandiate: null, msg: `Invalid Token`};
+	  }
       return {session: session_id,branchCandiate: null, msg: `Network error: ${errorText}`};
     }
 

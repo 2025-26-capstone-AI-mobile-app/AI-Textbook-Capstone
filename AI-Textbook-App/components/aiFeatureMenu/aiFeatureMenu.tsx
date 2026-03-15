@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 're
 import Modal from 'react-native-modal';
 import AIChatOverlay from '../chat/chatOverlay';
 import FlashcardConfigOverlay from '../flashcards/flashcardConfigOverlay';
+import AIQuizOverlay from '../quiz/quizOverlay';
 
 type Props = {
   isVisible: boolean;
@@ -17,6 +18,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   const FEATURE_NONE = 0;
   const FEATURE_CHAT = 1;
   const FEATURE_FLASHCARDS = 2;
+  const FEATURE_QUIZ = 3;
 
   const [token, setToken] = useState<string>('');
   const [featureSelected, setFeatureSelected] = useState<number>(FEATURE_NONE);
@@ -25,11 +27,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });
 
-  const openChat = () => {
-    setFeatureSelected(FEATURE_CHAT);
-  };
-
-  const closeChat = () => {
+  const closeOverlay = () => {
     setFeatureSelected(FEATURE_NONE);
   };
 
@@ -54,13 +52,19 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
 
         <ScrollView>
           {/* Feature selectors */}
-          <TouchableOpacity style={styles.featureSelector} onPress={openChat}>
+          <TouchableOpacity
+            style={styles.featureSelector}
+            onPress={() => setFeatureSelected(FEATURE_CHAT)}>
             <Text style={styles.featureSelectorText}>AI Chat</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.featureSelector} onPress={openFlashcards}>
             <Text style={styles.featureSelectorText}>AI Flashcards</Text>
             <Text style={styles.featureSelectorSubText}>Generate study flashcards</Text>
+          <TouchableOpacity
+            style={styles.featureSelector}
+            onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
+            <Text style={styles.featureSelectorText}>Quiz</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -68,7 +72,13 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
         isVisible={featureSelected === FEATURE_CHAT}
         textbookId={textbookId}
         chapterId={chapterId}
-        closeFunc={closeChat}
+        closeFunc={closeOverlay}
+      />
+      <AIQuizOverlay
+        isVisible={featureSelected === FEATURE_QUIZ}
+        textbookId={textbookId}
+        chapterId={chapterId}
+        closeFunc={closeOverlay}
       />
 
       <FlashcardConfigOverlay
@@ -87,7 +97,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '75%',
+    height: '100%',
     width: '100%',
     backgroundColor: '#383737ff',
     marginTop: 'auto',
