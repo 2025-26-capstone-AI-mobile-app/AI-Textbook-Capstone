@@ -18,10 +18,7 @@ export default function ChapterReader() {
   }>();
 
   /* Switch here for textbook title + chapter title*/
-  const title = 
-    textbookTitle && chapterTitle 
-    ? `${textbookTitle}: ${chapterTitle}`
-    : "Loading…";
+  const title = textbookTitle && chapterTitle ? `${textbookTitle}: ${chapterTitle}` : 'Loading…';
 
   /* Switch here for only chapter title*/
   // const title = chapterTitle ?? "Loading…";
@@ -34,10 +31,10 @@ export default function ChapterReader() {
           headerTitle: () => (
             <View style={{ flexDirection: 'column' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: '#00000' }}>
-                {textbookTitle ?? "Loading…"}
+                {textbookTitle ?? 'Loading…'}
               </Text>
               <Text style={{ fontSize: 14, color: '#000000ff' }}>
-                {chapter ? `Chapter ${chapter}: ${chapterTitle ?? ""}` : chapterTitle ?? ""}
+                {chapter ? `Chapter ${chapter}: ${chapterTitle ?? ''}` : (chapterTitle ?? '')}
               </Text>
             </View>
           ),
@@ -94,10 +91,7 @@ function ChapterContent({
   if (Platform.OS === 'web') {
     return (
       <>
-        <iframe
-          src={pdfUrl}
-          style={{ width: '100%', height: '100%', border: 'none' }}
-        />
+        <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
       </>
     );
   }

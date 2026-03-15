@@ -20,7 +20,7 @@ export default function ReadTextbookScreen() {
     })();
   }, [id]);
 
-  const title = textbook?.title ?? "Loading…";
+  const title = textbook?.title ?? 'Loading…';
 
   return (
     <>
@@ -45,7 +45,9 @@ export default function ReadTextbookScreen() {
                       styles.chapterArrow,
                       { backgroundColor: pressed ? '#2A2A2A' : 'transparent' },
                     ]}>
-                    <Text style={styles.arrowText}>{expandedChapter === chapter.id ? '▼' : '▶'}</Text>
+                    <Text style={styles.arrowText}>
+                      {expandedChapter === chapter.id ? '▼' : '▶'}
+                    </Text>
                   </Pressable>
 
                   {/* Chapter title opens the chapter */}

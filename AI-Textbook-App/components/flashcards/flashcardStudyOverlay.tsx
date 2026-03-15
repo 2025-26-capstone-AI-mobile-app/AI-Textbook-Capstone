@@ -79,7 +79,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
             disabled={currentIndex === 0}>
             <Text style={styles.navButtonText}>← Previous</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.navButton,
@@ -111,10 +111,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
         {!isComplete ? (
           <>
             {/* Flashcard */}
-            <TouchableOpacity
-              style={styles.cardContainer}
-              onPress={handleFlip}
-              activeOpacity={0.9}>
+            <TouchableOpacity style={styles.cardContainer} onPress={handleFlip} activeOpacity={0.9}>
               <View style={styles.card}>
                 <ScrollView contentContainerStyle={styles.cardContent}>
                   <Text style={styles.cardLabel}>{isFlipped ? 'Answer' : 'Question'}</Text>

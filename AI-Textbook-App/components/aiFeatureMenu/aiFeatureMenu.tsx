@@ -57,10 +57,10 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
             onPress={() => setFeatureSelected(FEATURE_CHAT)}>
             <Text style={styles.featureSelectorText}>AI Chat</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.featureSelector} onPress={openFlashcards}>
             <Text style={styles.featureSelectorText}>AI Flashcards</Text>
             <Text style={styles.featureSelectorSubText}>Generate study flashcards</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.featureSelector}
             onPress={() => setFeatureSelected(FEATURE_QUIZ)}>

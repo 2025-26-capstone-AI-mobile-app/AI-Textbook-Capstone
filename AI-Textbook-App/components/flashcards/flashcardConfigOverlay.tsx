@@ -67,7 +67,7 @@ export default function FlashcardConfigOverlay({
 
       // Find the current chapter
       const currentChapter = textbookData.chapters.find(
-        (ch: any) => ch.id.toString() === chapterId
+        (ch: any) => ch.id.toString() === chapterId,
       );
 
       if (!currentChapter) {
@@ -103,15 +103,16 @@ export default function FlashcardConfigOverlay({
 
     // console.log(""selected?.pageOffset)
     try {
-      const selected = subChapters.find(s => s.title === selectedSubChapter);
+      const selected = subChapters.find((s) => s.title === selectedSubChapter);
       const response = await generateFlashcards(
-        token, 
-        textbookId, 
-        chapterId, 
+        token,
+        textbookId,
+        chapterId,
         cardCount,
         undefined,
         selected?.title,
-        selected?.pageOffset);
+        selected?.pageOffset,
+      );
 
       if (!response.cards || response.cards.length === 0) {
         setError(response.msg || 'Failed to generate flashcards');
