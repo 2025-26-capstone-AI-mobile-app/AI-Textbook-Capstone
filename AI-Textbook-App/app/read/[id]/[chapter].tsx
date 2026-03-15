@@ -8,19 +8,42 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
 
 export default function ChapterReader() {
-  const { id, chapter, chapterTitle, pageOffset } = useLocalSearchParams<{
+  const { id, chapter, chapterTitle, textbookTitle, pageOffset } = useLocalSearchParams<{
     id: string;
     chapter: string;
     chapterTitle?: string;
+    textbookTitle?: string;
     pageOffset: string;
   }>();
 
-  // Set the header title immediately — prevents read/[id]/chapter
-  const title = chapterTitle ?? "Loading…";
+  /* Switch here for textbook title + chapter title*/
+  const title = 
+    textbookTitle && chapterTitle 
+    ? `${textbookTitle}: ${chapterTitle}`
+    : "Loading…";
+
+  /* Switch here for only chapter title*/
+  // const title = chapterTitle ?? "Loading…";
 
   return (
     <>
-      <Stack.Screen options={{ title }} />
+      {/* Switch here for textbook title + chapter title*/}
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View style={{ flexDirection: 'column' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#00000' }}>
+                {textbookTitle ?? "Loading…"}
+              </Text>
+              <Text style={{ fontSize: 14, color: '#000000ff' }}>
+                {chapter ? `Chapter ${chapter}: ${chapterTitle ?? ""}` : chapterTitle ?? ""}
+              </Text>
+            </View>
+          ),
+        }}
+      />
+      {/* Switch here for only chapter title*/}
+      {/* <Stack.Screen options={{ title }} /> */}
       <ChapterContent
         id={id}
         chapter={chapter}

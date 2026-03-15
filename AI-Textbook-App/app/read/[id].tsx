@@ -54,9 +54,10 @@ export default function ReadTextbookScreen() {
                       router.push({
                         pathname: '../read/[id]/[chapter]',
                         params: {
-                          id: textbook._id,
+                          id: textbook.id,
                           chapter: chapter.id,
                           chapterTitle: chapter.title,
+                          textbookTitle: textbook.title,
                           pageOffset: 1, // open first page of chapter
                         },
                       })
@@ -85,9 +86,10 @@ export default function ReadTextbookScreen() {
                           router.push({
                             pathname: '../read/[id]/[chapter]',
                             params: {
-                              id: textbook._id,
+                              id: textbook.id,
                               chapter: chapter.id,
                               chapterTitle: chapter.title,
+                              textbookTitle: textbook.title,
                               subchapter: sub.title,
                               pageOffset: sub.pageOffset + 1,
                             },

@@ -101,8 +101,17 @@ export default function FlashcardConfigOverlay({
     setLoading(true);
     setError('');
 
+    // console.log(""selected?.pageOffset)
     try {
-      const response = await generateFlashcards(token, textbookId, chapterId, cardCount);
+      const selected = subChapters.find(s => s.title === selectedSubChapter);
+      const response = await generateFlashcards(
+        token, 
+        textbookId, 
+        chapterId, 
+        cardCount,
+        undefined,
+        selected?.title,
+        selected?.pageOffset);
 
       if (!response.cards || response.cards.length === 0) {
         setError(response.msg || 'Failed to generate flashcards');

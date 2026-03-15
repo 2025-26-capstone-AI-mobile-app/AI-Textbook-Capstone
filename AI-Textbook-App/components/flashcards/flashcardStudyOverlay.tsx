@@ -43,7 +43,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
     setIncorrectCount(0);
   };
 
-  const isComplete = currentIndex === flashcards.length - 1 && (correctCount + incorrectCount > 0);
+  const isComplete = correctCount + incorrectCount === flashcards.length;
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -64,6 +64,36 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
           <Text style={styles.progressText}>
             {currentIndex + 1} / {flashcards.length}
           </Text>
+        </View>
+
+        {/* Navigation buttons between flashcards*/}
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity
+            style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+            onPress={() => {
+              if (currentIndex > 0) {
+                setCurrentIndex(currentIndex - 1);
+                setIsFlipped(false);
+              }
+            }}
+            disabled={currentIndex === 0}>
+            <Text style={styles.navButtonText}>← Previous</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              currentIndex === flashcards.length - 1 && styles.navButtonDisabled,
+            ]}
+            onPress={() => {
+              if (currentIndex < flashcards.length - 1) {
+                setCurrentIndex(currentIndex + 1);
+                setIsFlipped(false);
+              }
+            }}
+            disabled={currentIndex === flashcards.length - 1}>
+            <Text style={styles.navButtonText}>Next →</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Score display */}
@@ -100,17 +130,20 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
 
             {/* Answer buttons (only show after flipping) */}
             {isFlipped && (
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.answerButton, styles.incorrectButton]}
-                  onPress={() => handleNext(false)}>
-                  <Text style={styles.answerButtonText}>✗ Incorrect</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.answerButton, styles.correctButton]}
-                  onPress={() => handleNext(true)}>
-                  <Text style={styles.answerButtonText}>✓ Correct</Text>
-                </TouchableOpacity>
+              <View style={styles.answerSection}>
+                <Text style={styles.answerPrompt}>Did you get it right?</Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.answerButton, styles.incorrectButton]}
+                    onPress={() => handleNext(false)}>
+                    <Text style={styles.answerButtonText}>No</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.answerButton, styles.correctButton]}
+                    onPress={() => handleNext(true)}>
+                    <Text style={styles.answerButtonText}>Yes</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </>
@@ -192,6 +225,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 10,
+  },
+  navButton: {
+    flex: 1,
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#555555',
+    opacity: 0.5,
+  },
+  navButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   scoreContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -257,6 +312,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 10,
+  },
+  answerSection: {
+    marginTop: 10,
+  },
+  answerPrompt: {
+    color: 'white',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 15,
+    fontWeight: '600',
   },
   answerButton: {
     flex: 1,

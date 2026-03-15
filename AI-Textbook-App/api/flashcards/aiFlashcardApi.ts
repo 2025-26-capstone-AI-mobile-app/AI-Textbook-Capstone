@@ -12,7 +12,9 @@ export async function generateFlashcards(
     textbook_id: string,
     chapter_id: string,
     num_cards: number = 10,
-    hint?: string
+    hint?: string,
+    subchapter_title?: string,
+    subchapter_page_offset?: number
 ): Promise<GenerateFlashcardsResponse> {
     try {
         const url = `${backendUrl}/flashcards/generate`;
@@ -27,7 +29,9 @@ export async function generateFlashcards(
             chapter: chapter_id,
             num_flashcards: num_cards,
             context: "",  // Empty context since we're using the chapter text
-            hint: hint || ""
+            hint: hint || "",
+            subchapter_title,
+            subchapter_page_offset
         };
         
         const backendResponse = await fetch(url, {
