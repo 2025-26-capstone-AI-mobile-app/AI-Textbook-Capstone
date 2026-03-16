@@ -20,7 +20,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   const FEATURE_FLASHCARDS = 2;
   const FEATURE_QUIZ = 3;
 
-  const [token, setToken] = useState<string>('');
+  const [, setToken] = useState<string>('');
   const [featureSelected, setFeatureSelected] = useState<number>(FEATURE_NONE);
 
   useEffect(() => {
