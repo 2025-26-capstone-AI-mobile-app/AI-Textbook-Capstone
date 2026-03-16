@@ -2,7 +2,14 @@
 
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, Platform, View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  Text,
+  Platform,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
@@ -19,12 +26,6 @@ export default function ChapterReader() {
     textbookTitle?: string;
     pageOffset: string;
   }>();
-
-  /* Switch here for textbook title + chapter title*/
-  const title = textbookTitle && chapterTitle ? `${textbookTitle}: ${chapterTitle}` : 'Loading…';
-
-  /* Switch here for only chapter title*/
-  // const title = chapterTitle ?? "Loading…";
 
   return (
     <>

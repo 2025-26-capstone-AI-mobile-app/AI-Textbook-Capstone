@@ -39,8 +39,7 @@ export default function ReadTextbookScreen() {
           <ScrollView
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
+            showsVerticalScrollIndicator={false}>
             <Pressable style={styles.backButton} onPress={() => router.back()}>
               <Ionicons name="chevron-back" size={22} color="#007AFF" />
               <Text style={styles.backText}>Library</Text>
@@ -52,7 +51,9 @@ export default function ReadTextbookScreen() {
                   <Ionicons name="book" size={28} color="#007AFF" />
                 </View>
                 <View style={styles.titleTextContainer}>
-                  <Text style={styles.title} numberOfLines={2}>{textbook.title}</Text>
+                  <Text style={styles.title} numberOfLines={2}>
+                    {textbook.title}
+                  </Text>
                   <Text style={styles.author}>By {textbook.author}</Text>
                 </View>
               </View>

@@ -8,8 +8,7 @@ export default function RootLayout() {
         headerTintColor: '#FFFFFF',
         headerTitleStyle: { fontWeight: '600' },
         contentStyle: { backgroundColor: '#0F0F0F' },
-      }}
-    >
+      }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
 
       <Stack.Screen

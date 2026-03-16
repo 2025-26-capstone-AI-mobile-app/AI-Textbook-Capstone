@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -51,7 +44,7 @@ export default function HomeScreen() {
                 Alert.alert('Failed to fetch textbooks');
                 return;
               }
-              if (data.is_authenticated != true) {
+              if (data.is_authenticated !== true) {
                 Alert.alert('Your login has expired');
                 logout();
                 return;
@@ -100,8 +93,7 @@ export default function HomeScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         <View style={styles.headerSection}>
           <Text style={styles.greeting}>Welcome back</Text>
           <Text style={styles.username}>{username}</Text>
@@ -125,8 +117,7 @@ export default function HomeScreen() {
                     pathname: '/read/[id]',
                     params: { id: textbook.id, title: textbook.title },
                   })
-                }
-              >
+                }>
                 <View style={styles.textbookIcon}>
                   <Ionicons name="book" size={24} color="#007AFF" />
                 </View>
@@ -145,8 +136,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.addTextbookCard}
             activeOpacity={0.7}
-            onPress={addTextbook}
-          >
+            onPress={addTextbook}>
             <View style={styles.addIconCircle}>
               <Ionicons name="add" size={28} color="#007AFF" />
             </View>
@@ -162,16 +152,11 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={styles.testButton}
           activeOpacity={0.7}
-          onPress={() => router.navigate('/')}
-        >
+          onPress={() => router.navigate('/')}>
           <Text style={styles.testButtonText}>Test persistence</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.logoutButton}
-          activeOpacity={0.8}
-          onPress={logout}
-        >
+        <TouchableOpacity style={styles.logoutButton} activeOpacity={0.8} onPress={logout}>
           <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={styles.logoutIcon} />
           <Text style={styles.logoutButtonText}>Log Out</Text>
         </TouchableOpacity>

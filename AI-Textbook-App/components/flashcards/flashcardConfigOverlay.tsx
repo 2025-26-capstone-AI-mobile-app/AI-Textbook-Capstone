@@ -1,7 +1,7 @@
 // components/flashcards/flashcardConfigOverlay.tsx
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -49,13 +49,7 @@ export default function FlashcardConfigOverlay({
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   }, []);
 
-  useEffect(() => {
-    if (isVisible && token && textbookId) {
-      loadSubChapters();
-    }
-  }, [isVisible, token, textbookId]);
-
-  const loadSubChapters = async () => {
+  const loadSubChapters = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -90,7 +84,13 @@ export default function FlashcardConfigOverlay({
     } finally {
       setLoading(false);
     }
-  };
+  }, [textbookId, token, chapterId]);
+
+  useEffect(() => {
+    if (isVisible && token && textbookId) {
+      loadSubChapters();
+    }
+  }, [isVisible, token, textbookId, loadSubChapters]);
 
   const handleGenerateFlashcards = async () => {
     if (!selectedSubChapter) {
