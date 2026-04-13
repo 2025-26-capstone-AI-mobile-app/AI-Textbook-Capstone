@@ -95,6 +95,7 @@ export async function logout(){
     router.replace('/login');
   } catch(error: any) {
     Alert.alert("Logout failed", error.message);
+    router.replace('/login');
   }
 
 }

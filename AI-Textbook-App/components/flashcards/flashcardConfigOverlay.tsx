@@ -10,11 +10,13 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 import { generateFlashcards } from '@/api/flashcards/aiFlashcardApi';
 import FlashcardStudyOverlay from './flashcardStudyOverlay';
+import { logout } from '@/api/login/loginApi';
 
 type Props = {
   isVisible: boolean;
@@ -116,6 +118,14 @@ export default function FlashcardConfigOverlay({
 
       if (!response.cards || response.cards.length === 0) {
         setError(response.msg || 'Failed to generate flashcards');
+        if(response.msg === 'Invalid token'){
+          Alert.alert('Login expired', 'Please log back in', [
+            {
+              text: 'Ok',
+              onPress: () => logout(),
+            },
+          ]);
+        }
         return;
       }
 

@@ -23,7 +23,7 @@ export async function generateQuiz(
     hint: string, 
     numQuestions: number, 
     selectedChapterId: string, 
-    textbookId: string): Promise<Question[]>{
+    textbookId: string): Promise<Question[] | {detail: string}>{
     try {
         console.log(JSON.stringify({ context: context, hint: hint, num_questions: numQuestions, chapter: selectedChapterId, textbook_id: textbookId }))
         const res = await fetch(`${backendUrl}/quiz/generate`, {
@@ -35,9 +35,10 @@ export async function generateQuiz(
             body: JSON.stringify({ context: context, hint: hint, num_questions: numQuestions, chapter: selectedChapterId, textbook_id: textbookId })
         })
         const data = await res.json()
+        console.log(data)
         return data || []
     } catch (e) {
         console.error("Failed to load chats", e)
-        return [];
+        return {detail: "Unknown Error"};
     }
 }
