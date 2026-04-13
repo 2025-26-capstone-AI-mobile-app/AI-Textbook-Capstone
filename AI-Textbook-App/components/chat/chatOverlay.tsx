@@ -220,10 +220,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         </View>
 
         <ScrollView style={styles.chatListScroll} showsVerticalScrollIndicator={false}>
-          <TouchableOpacity
-            style={styles.newChatRow}
-            activeOpacity={0.6}
-            onPress={openNewChat}>
+          <TouchableOpacity style={styles.newChatRow} activeOpacity={0.6} onPress={openNewChat}>
             <View style={styles.newChatIconContainer}>
               <Ionicons name="add" size={22} color="#007AFF" />
             </View>
@@ -233,25 +230,25 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
 
           {chats
             ? chats.map((session) => {
-              return (
-                <TouchableOpacity
-                  key={session.session_id}
-                  style={styles.chatRow}
-                  activeOpacity={0.6}
-                  onPress={() => openChat(session.session_id, session.title)}>
-                  <View style={styles.chatRowIconContainer}>
-                    <Ionicons name="chatbubble" size={18} color="#8E8E93" />
-                  </View>
-                  <View style={styles.chatRowTextContainer}>
-                    <Text style={styles.chatRowTitle}>{session.title}</Text>
-                    <Text style={styles.chatRowDate}>
-                      {new Date(session.updated_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#48484A" />
-                </TouchableOpacity>
-              );
-            })
+                return (
+                  <TouchableOpacity
+                    key={session.session_id}
+                    style={styles.chatRow}
+                    activeOpacity={0.6}
+                    onPress={() => openChat(session.session_id, session.title)}>
+                    <View style={styles.chatRowIconContainer}>
+                      <Ionicons name="chatbubble" size={18} color="#8E8E93" />
+                    </View>
+                    <View style={styles.chatRowTextContainer}>
+                      <Text style={styles.chatRowTitle}>{session.title}</Text>
+                      <Text style={styles.chatRowDate}>
+                        {new Date(session.updated_at).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#48484A" />
+                  </TouchableOpacity>
+                );
+              })
             : []}
         </ScrollView>
       </View>
@@ -272,7 +269,11 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
               onPress={closeChat}
               activeOpacity={0.7}
               disabled={!chatInputEnabled}>
-              <Ionicons name="close-circle" size={32} color={chatInputEnabled ? '#8E8E93' : '#3A3A3C'} />
+              <Ionicons
+                name="close-circle"
+                size={32}
+                color={chatInputEnabled ? '#8E8E93' : '#3A3A3C'}
+              />
             </TouchableOpacity>
           </View>
           <ScrollView

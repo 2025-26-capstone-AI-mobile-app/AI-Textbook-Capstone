@@ -2,7 +2,7 @@
 //const chatApi = require('../api/chat/aiChatApi')
 
 describe('Test ai chat api calls', () => {
-    test('basic call', async () => {
-        return;
-    })
-})
+  test('basic call', async () => {
+    return;
+  });
+});

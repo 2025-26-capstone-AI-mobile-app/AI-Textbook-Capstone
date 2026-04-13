@@ -69,10 +69,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
             <Ionicons name="chevron-forward" size={20} color="#48484A" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.featureRow}
-            activeOpacity={0.6}
-            onPress={openFlashcards}>
+          <TouchableOpacity style={styles.featureRow} activeOpacity={0.6} onPress={openFlashcards}>
             <View style={styles.featureIconContainer}>
               <Ionicons name="albums" size={22} color="#007AFF" />
             </View>
