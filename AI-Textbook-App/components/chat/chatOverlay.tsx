@@ -12,7 +12,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import Modal from 'react-native-modal';
 import { logout } from '@/api/login/loginApi';
 
@@ -95,6 +95,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       setChatOpen(true);
       setChatTitle(title);
       const resp = await loadChat(token, chatId);
+      console.log(resp)
       if (typeof resp === 'string') {
         Alert.alert('Login expired', 'Please log back in', [
           {
@@ -211,7 +212,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       <View style={styles.overlayContent}>
         {/* Title and close button */}
         <View style={styles.titleBar}>
-          <Text style={styles.title}>Chats</Text>
+          <Text style={styles.title} testID='overlayTitle'>Chats</Text>
           <View style={styles.closeButton}>
             <Button title="X" onPress={closeFunc} color="black"></Button>
           </View>
@@ -222,7 +223,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           <TouchableOpacity
             style={{ ...styles.chatSelector, ...styles.newChatButton }}
             onPress={openNewChat}>
-            <Text style={styles.chatSelectorText}>Start new chat</Text>
+            <Text style={styles.chatSelectorText} testID='newChatButton'>Start new chat</Text>
           </TouchableOpacity>
 
           {/* Show previous chats */}
@@ -230,6 +231,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             ? chats.map((session) => {
                 return (
                   <TouchableOpacity
+                    testID={'previousChat' + session.session_id}
                     key={session.session_id}
                     style={styles.chatSelector}
                     onPress={() => openChat(session.session_id, session.title)}>
@@ -282,7 +284,8 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                   <View
                     style={
                       message.role === 'assistant' ? styles.assistantMessage : styles.userMessage
-                    }>
+                    }
+                    testID={'message_' + message.id}>
                     <Text
                       style={
                         message.role === 'assistant'
