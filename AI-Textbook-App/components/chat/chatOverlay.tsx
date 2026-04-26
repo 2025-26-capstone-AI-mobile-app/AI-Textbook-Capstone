@@ -1,4 +1,4 @@
-import { fetchChats, loadChat, streamMessage, updateChatSummary } from '@/api/chat/aiChatApi';
+import { fetchChats, loadChat, STREAM_DONE_STRING, streamMessage, updateChatSummary } from '@/api/chat/aiChatApi';
 import { ChatSession, Message } from '@/types/chatTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -35,10 +35,13 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [messages, setMessages] = useState<Message[]>([]);
   const [scrollOffset, setScrollOffset] = useState<number>(0); //used to auto scroll to bottom on load
   const [chatViewHeight, setChatViewHeight] = useState<number>(0);
+  const [lastMessageHeight, setlastMessageHeight] = useState<number>(0);
+  const [lastChunks, setLastChunks] = useState<string[]>([STREAM_DONE_STRING]);
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const chatRef = useRef(null);
+  const lastMessageRef = useRef(null);
 
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
@@ -86,6 +89,10 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   useLayoutEffect(() => {
     chatRef.current?.measure((_x: number, _y: number, _width: number, height: number) => {
       setChatViewHeight(height);
+    });
+
+    lastMessageRef.current?.measure((_x: number, _y: number, _width: number, height: number) => {
+      setlastMessageHeight(height);
     });
   });
 
@@ -185,6 +192,8 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         return;
       }
 
+
+      setLastChunks(response.chunks);
       setMessages((messages) =>
         messages.map((msg) =>
           msg.id === TEMP_MESSAGE_ID
@@ -205,6 +214,23 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     }
     setChatInputEnabled(true);
   };
+
+  const READ_DONE_STRING = '!!DONE_READING'
+  useEffect(() =>{
+    setTimeout(() => {
+      if(lastChunks.length > 0 && messages.length > 0 && lastChunks[lastChunks.length - 1] !== READ_DONE_STRING){
+        setMessages((messages) => {
+          messages[messages.length - 1].content = lastChunks.slice(0, lastChunks.length - 1).join('');
+          return [...messages]
+        })
+
+        if(lastChunks[lastChunks.length - 1] === STREAM_DONE_STRING){
+          console.log('Done reading stream')
+          lastChunks.push(READ_DONE_STRING)
+        }
+      }
+    }, 200)
+  })
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -270,15 +296,19 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             contentOffset={{ x: 0, y: scrollOffset }}
             ref={chatRef}
             onContentSizeChange={(_width, height) => {
-              setScrollOffset(height - chatViewHeight);
+              if((chatViewHeight) < height){
+                setScrollOffset(height - chatViewHeight);
+              }
             }}>
-            {messages.map((message: Message) => {
+            {messages.map((message: Message, index: number) => {
               let content = message.content;
               if (message.id === TEMP_MESSAGE_ID) {
                 content = '...';
               }
               return (
-                <View key={message.id}>
+                <View 
+                  key={message.id}
+                  ref={index === messages.length - 1 ? null : lastMessageRef}>
                   <View
                     style={
                       message.role === 'assistant' ? styles.assistantMessage : styles.userMessage
