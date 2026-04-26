@@ -29,23 +29,35 @@ export async function loadChat(token, session_id){
         id: 'user1',
         content: "test message",
         role: "user",
-        timestamp: Date.now()
+        timestamp: new Date()
     })
 
     messages.push({
-        id: 'assistant2',
+        id: 'assistant1',
         content: "test response",
         role: "assistant",
-        timestamp: Date.now()
+        timestamp: new Date()
     })
 
     return messages;
 }
 
-export async function streamMessage(streamRes, session_id) {
+export async function streamMessage(token , message, textbook_id, chapter_id, session_id) {
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    await sleep(500)
+    
+    if(message === 'stream401')
+        // 401 error
+        return {session: null,branchCandiate: null, msg: `Invalid Token`};
+
+    if(message === 'streamError')
+        // Generic error
+        return {session: session_id,branchCandiate: null, msg: `Network error: ${errorText}`};
+
+    return {session: session_id, branchCandiate: null, msg: 'Response message'}
 
 }
 
-export async function updateChatSummary(token, message, textbook_id, chapter_id, session_id) {
+export async function updateChatSummary(token, session_id) {
 
 }

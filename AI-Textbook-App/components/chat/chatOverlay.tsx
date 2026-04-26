@@ -38,6 +38,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [loggedOut, setLoggedOut] = useState<boolean>(false); //debug variable
   const chatRef = useRef(null);
 
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       const resp = await loadChat(token, chatId);
       console.log(resp)
       if (typeof resp === 'string') {
+        setLoggedOut(true)
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -177,6 +179,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
 
       if (response.session == null && response.msg === 'Invalid Token') {
+        setLoggedOut(true)
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -209,6 +212,9 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
+      {/* this is just for debug*/}
+      {loggedOut ? (<View testID='loggedOut'></View>) : []}
+
       <View style={styles.overlayContent}>
         {/* Title and close button */}
         <View style={styles.titleBar}>
@@ -222,8 +228,9 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           {/* Create new chat button */}
           <TouchableOpacity
             style={{ ...styles.chatSelector, ...styles.newChatButton }}
-            onPress={openNewChat}>
-            <Text style={styles.chatSelectorText} testID='newChatButton'>Start new chat</Text>
+            onPress={openNewChat}
+            testID='newChatButton'>
+            <Text style={styles.chatSelectorText}>Start new chat</Text>
           </TouchableOpacity>
 
           {/* Show previous chats */}
@@ -311,12 +318,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             <TextInput
               style={styles.chatInput}
               onChangeText={(text) => setChatMessage(text)}
+              testID='chatInput'
               value={chatMessage}
               editable={chatInputEnabled}
             />
             <TouchableOpacity
               style={styles.chatSendButton}
               onPress={sendMessage}
+              testID='sendButton'
               disabled={!chatInputEnabled}>
               <Ionicons name="send" size={24} color="white" />
             </TouchableOpacity>
