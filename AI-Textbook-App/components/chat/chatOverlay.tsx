@@ -96,9 +96,8 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       setChatOpen(true);
       setChatTitle(title);
       const resp = await loadChat(token, chatId);
-      console.log(resp)
       if (typeof resp === 'string') {
-        setLoggedOut(true)
+        setLoggedOut(true);
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -179,7 +178,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
 
       if (response.session == null && response.msg === 'Invalid Token') {
-        setLoggedOut(true)
+        setLoggedOut(true);
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -213,12 +212,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       {/* this is just for debug*/}
-      {loggedOut ? (<View testID='loggedOut'></View>) : []}
+      {loggedOut ? <View testID="loggedOut"></View> : []}
 
       <View style={styles.overlayContent}>
         {/* Title and close button */}
         <View style={styles.titleBar}>
-          <Text style={styles.title} testID='overlayTitle'>Chats</Text>
+          <Text style={styles.title} testID="overlayTitle">
+            Chats
+          </Text>
           <View style={styles.closeButton}>
             <Button title="X" onPress={closeFunc} color="black"></Button>
           </View>
@@ -229,7 +230,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           <TouchableOpacity
             style={{ ...styles.chatSelector, ...styles.newChatButton }}
             onPress={openNewChat}
-            testID='newChatButton'>
+            testID="newChatButton">
             <Text style={styles.chatSelectorText}>Start new chat</Text>
           </TouchableOpacity>
 
@@ -318,14 +319,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             <TextInput
               style={styles.chatInput}
               onChangeText={(text) => setChatMessage(text)}
-              testID='chatInput'
+              testID="chatInput"
               value={chatMessage}
               editable={chatInputEnabled}
             />
             <TouchableOpacity
               style={styles.chatSendButton}
               onPress={sendMessage}
-              testID='sendButton'
+              testID="sendButton"
               disabled={!chatInputEnabled}>
               <Ionicons name="send" size={24} color="white" />
             </TouchableOpacity>
