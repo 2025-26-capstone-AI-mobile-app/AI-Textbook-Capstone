@@ -12,15 +12,15 @@ Having access to peers or a mentor can make learning a new subject significantly
 The user can ask the AI tutor questions about the textbook. The AI will know which chapter and section the user is reading and will tailor its reponse based on that.
 
 ### AI Flashcards
-<img src="FlashcardsOverlay1.png" width=500>
-<img src="FlashcardEX.png" width=500>
-<img src="FlashcardsResult.png" width=500>
+<img src="FlashcardsOverlay1.png" width=150>
+<img src="FlashcardEX.png" width=150>
+<img src="FlashcardsResult.png" width=150>
 To help the user study, they can ask the AI to create flashcards for the section of the textbook they are currently reading. These flashcards are saved and can be viewed later.
 
 ### AI Quizzes
-<img src="QuizGenerator.png" width=500>
-<img src="QuizEX.png" width=500>
-<img src="QuizEXAnswers.png" width=500>
+<img src="QuizGenerator.png" width=150>
+<img src="QuizEX.png" width=150>
+<img src="QuizEXAnswers.png" width=150>
 The AI can also generate short, multiple choice quizzes for the user. These quizzes are automatically graded and can be taken as many times as the user needs in order to get the content down.
 
 ## Setup
