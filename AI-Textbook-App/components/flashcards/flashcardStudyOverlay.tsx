@@ -1,8 +1,7 @@
-// components/flashcards/flashcardStudyOverlay.tsx
-
 import { useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Modal from 'react-native-modal';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
   isVisible: boolean;
@@ -48,15 +47,17 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
-        {/* Title and close button */}
-        <View style={styles.titleBar}>
-          <Text style={styles.title}>Flashcards</Text>
-          <View style={styles.closeButton}>
-            <Button title="X" onPress={closeFunc} color="black" />
-          </View>
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
         </View>
 
-        {/* Progress bar */}
+        <View style={styles.titleBar}>
+          <Text style={styles.title}>Flashcards</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeFunc} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={32} color="#8E8E93" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -66,10 +67,10 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
           </Text>
         </View>
 
-        {/* Navigation buttons between flashcards*/}
         <View style={styles.navigationContainer}>
           <TouchableOpacity
-            style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+            style={[styles.navButton, styles.navButtonSecondary, currentIndex === 0 && styles.navButtonDisabled]}
+            activeOpacity={0.7}
             onPress={() => {
               if (currentIndex > 0) {
                 setCurrentIndex(currentIndex - 1);
@@ -77,14 +78,17 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               }
             }}
             disabled={currentIndex === 0}>
-            <Text style={styles.navButtonText}>← Previous</Text>
+            <Ionicons name="chevron-back" size={18} color={currentIndex === 0 ? '#48484A' : '#FFFFFF'} />
+            <Text style={[styles.navButtonText, currentIndex === 0 && styles.navButtonTextDisabled]}>Previous</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.navButton,
+              styles.navButtonPrimary,
               currentIndex === flashcards.length - 1 && styles.navButtonDisabled,
             ]}
+            activeOpacity={0.7}
             onPress={() => {
               if (currentIndex < flashcards.length - 1) {
                 setCurrentIndex(currentIndex + 1);
@@ -92,62 +96,70 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               }
             }}
             disabled={currentIndex === flashcards.length - 1}>
-            <Text style={styles.navButtonText}>Next →</Text>
+            <Text style={[styles.navButtonText, currentIndex === flashcards.length - 1 && styles.navButtonTextDisabled]}>Next</Text>
+            <Ionicons name="chevron-forward" size={18} color={currentIndex === flashcards.length - 1 ? '#48484A' : '#FFFFFF'} />
           </TouchableOpacity>
         </View>
 
-        {/* Score display */}
         <View style={styles.scoreContainer}>
           <View style={styles.scoreItem}>
-            <Text style={styles.scoreNumber}>{correctCount}</Text>
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={{ marginBottom: 4 }} />
+            <Text style={styles.scoreNumberCorrect}>{correctCount}</Text>
             <Text style={styles.scoreLabel}>Correct</Text>
           </View>
+          <View style={styles.scoreDivider} />
           <View style={styles.scoreItem}>
-            <Text style={[styles.scoreNumber, styles.incorrectColor]}>{incorrectCount}</Text>
+            <Ionicons name="close-circle" size={24} color="#FF453A" style={{ marginBottom: 4 }} />
+            <Text style={styles.scoreNumberIncorrect}>{incorrectCount}</Text>
             <Text style={styles.scoreLabel}>Incorrect</Text>
           </View>
         </View>
 
         {!isComplete ? (
-          <>
-            {/* Flashcard */}
-            <TouchableOpacity style={styles.cardContainer} onPress={handleFlip} activeOpacity={0.9}>
-              <View style={styles.card}>
-                <ScrollView contentContainerStyle={styles.cardContent}>
-                  <Text style={styles.cardLabel}>{isFlipped ? 'Answer' : 'Question'}</Text>
-                  <Text style={styles.cardText}>
-                    {isFlipped ? currentCard.answer : currentCard.question}
-                  </Text>
+          <View style={styles.cardAndAnswerContainer}>
+            <View style={styles.cardContainer}>
+              <View style={[styles.card, isFlipped && styles.cardFlipped]}>
+                <ScrollView
+                  contentContainerStyle={styles.cardContent}
+                  showsVerticalScrollIndicator={true}>
+                  <TouchableOpacity onPress={handleFlip} activeOpacity={0.9}>
+                    <Text style={styles.cardLabel}>{isFlipped ? 'Answer' : 'Question'}</Text>
+                    <Text style={styles.cardText}>
+                      {isFlipped ? currentCard.answer : currentCard.question}
+                    </Text>
+                  </TouchableOpacity>
                 </ScrollView>
-                <Text style={styles.tapToFlip}>
-                  {isFlipped ? 'Tap to see question' : 'Tap to see answer'}
-                </Text>
               </View>
-            </TouchableOpacity>
+            </View>
 
-            {/* Answer buttons (only show after flipping) */}
             {isFlipped && (
               <View style={styles.answerSection}>
                 <Text style={styles.answerPrompt}>Did you get it right?</Text>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.answerButton, styles.incorrectButton]}
+                    activeOpacity={0.8}
                     onPress={() => handleNext(false)}>
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
                     <Text style={styles.answerButtonText}>No</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.answerButton, styles.correctButton]}
+                    activeOpacity={0.8}
                     onPress={() => handleNext(true)}>
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
                     <Text style={styles.answerButtonText}>Yes</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
-          </>
+          </View>
         ) : (
-          /* Completion screen */
           <View style={styles.completionContainer}>
-            <Text style={styles.completionTitle}>🎉 Complete!</Text>
+            <View style={styles.completionEmojiContainer}>
+              <Text style={styles.completionEmoji}>🎉</Text>
+            </View>
+            <Text style={styles.completionTitle}>Complete!</Text>
             <Text style={styles.completionText}>
               You got {correctCount} out of {flashcards.length} correct
             </Text>
@@ -155,10 +167,12 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               {Math.round((correctCount / flashcards.length) * 100)}%
             </Text>
             <View style={styles.completionButtons}>
-              <TouchableOpacity style={styles.restartButton} onPress={handleRestart}>
+              <TouchableOpacity style={styles.restartButton} activeOpacity={0.8} onPress={handleRestart}>
+                <Ionicons name="refresh" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.restartButtonText}>Study Again</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.doneButton} onPress={closeFunc}>
+              <TouchableOpacity style={styles.doneButton} activeOpacity={0.8} onPress={closeFunc}>
+                <Ionicons name="checkmark-done" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.doneButtonText}>Done</Text>
               </TouchableOpacity>
             </View>
@@ -175,214 +189,268 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '90%',
+    height: '92%',
     width: '100%',
-    backgroundColor: '#383737ff',
+    backgroundColor: '#1C1C1E',
     marginTop: 'auto',
-    padding: 20,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  title: {
-    flex: 1,
-    fontSize: 30,
-    color: 'white',
-    fontWeight: 'bold',
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3A3A3C',
   },
   titleBar: {
     flexDirection: 'row',
-    borderBottomColor: 'white',
-    paddingBottom: 10,
-    borderBottomWidth: 2,
-    marginBottom: 20,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   closeButton: {
-    borderRadius: 20,
-    backgroundColor: '#ffffff68',
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignContent: 'center',
+    padding: 4,
   },
   progressContainer: {
-    marginBottom: 20,
+    marginTop: 20,
+    marginBottom: 16,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: '#2a2a2aff',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#007AFF',
+    borderRadius: 3,
   },
   progressText: {
-    color: '#a0a0a0',
+    color: '#8E8E93',
     fontSize: 14,
     textAlign: 'center',
+    fontWeight: '500',
   },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
     gap: 10,
   },
   navButton: {
     flex: 1,
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  navButtonPrimary: {
+    backgroundColor: '#007AFF',
+  },
+  navButtonSecondary: {
+    backgroundColor: '#2C2C2E',
   },
   navButtonDisabled: {
-    backgroundColor: '#555555',
+    backgroundColor: '#2C2C2E',
     opacity: 0.5,
   },
   navButtonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '600',
+  },
+  navButtonTextDisabled: {
+    color: '#48484A',
   },
   scoreContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
-    paddingVertical: 15,
-    backgroundColor: '#2a2a2aff',
-    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 16,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 14,
   },
   scoreItem: {
     alignItems: 'center',
+    flex: 1,
   },
-  scoreNumber: {
-    color: '#4CAF50',
-    fontSize: 32,
-    fontWeight: 'bold',
+  scoreDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#3A3A3C',
   },
-  incorrectColor: {
-    color: '#ff4444',
+  scoreNumberCorrect: {
+    color: '#34C759',
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  scoreNumberIncorrect: {
+    color: '#FF453A',
+    fontSize: 28,
+    fontWeight: '700',
   },
   scoreLabel: {
-    color: '#a0a0a0',
-    fontSize: 14,
-    marginTop: 5,
+    color: '#8E8E93',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  cardAndAnswerContainer: {
+    flex: 1,
   },
   cardContainer: {
     flex: 1,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   card: {
     flex: 1,
-    backgroundColor: '#2a2a2aff',
-    borderRadius: 15,
-    padding: 20,
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#4a4a4aff',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1.5,
+    borderColor: '#3A3A3C',
+  },
+  cardFlipped: {
+    borderColor: '#007AFF',
   },
   cardContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
+    paddingVertical: 16,
   },
   cardLabel: {
     color: '#007AFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 16,
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   cardText: {
-    color: 'white',
-    fontSize: 20,
+    color: '#FFFFFF',
+    fontSize: 19,
     textAlign: 'center',
     lineHeight: 28,
   },
-  tapToFlip: {
-    color: '#a0a0a0',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 15,
-    fontStyle: 'italic',
-  },
+
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
   },
   answerSection: {
-    marginTop: 10,
+    marginTop: 4,
   },
   answerPrompt: {
-    color: 'white',
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 17,
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 14,
     fontWeight: '600',
   },
   answerButton: {
     flex: 1,
-    padding: 18,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   correctButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#34C759',
   },
   incorrectButton: {
-    backgroundColor: '#ff4444',
+    backgroundColor: '#FF453A',
   },
   answerButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
   },
   completionContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  completionEmojiContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  completionEmoji: {
+    fontSize: 40,
+  },
   completionTitle: {
-    fontSize: 48,
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   completionText: {
-    color: 'white',
-    fontSize: 20,
-    marginBottom: 10,
+    color: '#8E8E93',
+    fontSize: 17,
+    marginBottom: 8,
   },
   completionPercentage: {
     color: '#007AFF',
-    fontSize: 72,
-    fontWeight: 'bold',
-    marginBottom: 40,
+    fontSize: 64,
+    fontWeight: '700',
+    marginBottom: 32,
   },
   completionButtons: {
     flexDirection: 'row',
-    gap: 15,
+    gap: 14,
   },
   restartButton: {
     backgroundColor: '#007AFF',
-    padding: 18,
-    borderRadius: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
     minWidth: 140,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   restartButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   doneButton: {
-    backgroundColor: '#4CAF50',
-    padding: 18,
-    borderRadius: 10,
+    backgroundColor: '#34C759',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
     minWidth: 140,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   doneButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });
