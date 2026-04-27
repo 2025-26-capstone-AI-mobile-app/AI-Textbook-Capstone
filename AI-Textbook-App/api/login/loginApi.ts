@@ -8,6 +8,7 @@ export async function login(username: string, password: string) {
     }
 
     const backendUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+    console.log(backendUrl);
     
 
     const formData = new URLSearchParams();
