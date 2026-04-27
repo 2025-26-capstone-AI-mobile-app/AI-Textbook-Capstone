@@ -11,19 +11,18 @@ Having access to peers or a mentor can make learning a new subject significantly
 The user can ask the AI tutor questions about the textbook. The AI will know which chapter and section the user is reading and will tailor its reponse based on that.
 
 ### AI Flashcards
-![](QuizGenerator.png)
-![](QuizEX.png)
-![](QuizEXAnswers.png)
+![](FlashcardsOverlay1.png)
+![](FlashcardEX.png)
+![](FlashcardsResult.png)
 To help the user study, they can ask the AI to create flashcards for the section of the textbook they are currently reading. These flashcards are saved and can be viewed later.
 
 ### AI Quizzes
-![]()
+![](QuizGenerator.png)
+![](QuizEX.png)
+![](QuizEXAnswers.png)
 The AI can also generate short, multiple choice quizzes for the user. These quizzes are automatically graded and can be taken as many times as the user needs in order to get the content down.
 
 ## Setup
-## Getting Started
-
-List prerequisites, setup steps, environment variables/secrets handling, and how to run the app locally.
 
 ### Prerequisites 
 * An emulator or a mobile device that can run the app. See this guide for setting up environment https://docs.expo.dev/get-started/set-up-your-environment/?platform=ios&device=simulated 
