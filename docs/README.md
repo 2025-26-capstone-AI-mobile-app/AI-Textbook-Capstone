@@ -7,19 +7,20 @@ Having access to peers or a mentor can make learning a new subject significantly
 ## Features
 
 ### AI Chat
-![UI for starting a new chat, viewing old chat, and example of a chat with user](AIChat.png)
+
+<img src="AIChat.png" width=500>
 The user can ask the AI tutor questions about the textbook. The AI will know which chapter and section the user is reading and will tailor its reponse based on that.
 
 ### AI Flashcards
-![](FlashcardsOverlay1.png)
-![](FlashcardEX.png)
-![](FlashcardsResult.png)
+<img src="FlashcardsOverlay1.png" width=500>
+<img src="FlashcardEX.png" width=500>
+<img src="FlashcardsResult.png" width=500>
 To help the user study, they can ask the AI to create flashcards for the section of the textbook they are currently reading. These flashcards are saved and can be viewed later.
 
 ### AI Quizzes
-![](QuizGenerator.png)
-![](QuizEX.png)
-![](QuizEXAnswers.png)
+<img src="QuizGenerator.png" width=500>
+<img src="QuizEX.png" width=500>
+<img src="QuizEXAnswers.png" width=500>
 The AI can also generate short, multiple choice quizzes for the user. These quizzes are automatically graded and can be taken as many times as the user needs in order to get the content down.
 
 ## Setup
