@@ -9,6 +9,7 @@ Having access to peers or a mentor can make learning a new subject significantly
 ### AI Chat
 
 <img src="AIChat.png" width=500>
+
 The user can ask the AI tutor questions about the textbook. The AI will know which chapter and section the user is reading and will tailor its reponse based on that.
 
 ### AI Flashcards
