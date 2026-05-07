@@ -1,8 +1,17 @@
 // AI-Textbook-App/add/read/[id]/[chapter].tsx
 
 import { useLocalSearchParams, Stack, router } from 'expo-router';
-import { useEffect, useState, useRef } from 'react';
-import { Text, Platform, View, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Modal, ActivityIndicator} from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  Text,
+  Platform,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Modal,
+  ActivityIndicator,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIFeatureMenu from '@/components/aiFeatureMenu/aiFeatureMenu';
@@ -88,7 +97,7 @@ function ChapterContent({
     })();
   }, [id, chapter, pageOffset]);
 
-  // New effect — shows idle modal
+  // shows idle modal
   useEffect(() => {
     if (isIdle && !aiOverlayVisible && !stopAskingEnabled) {
       setIdleModalVisible(true);
@@ -104,9 +113,7 @@ function ChapterContent({
     );
 
   if (Platform.OS === 'web') {
-    return (
-      <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
-    );
+    return <iframe src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none' }} />;
   }
 
   return (
@@ -127,9 +134,7 @@ function ChapterContent({
         </View>
 
         <View style={styles.idleOverlay}>
-          <Text style={{ color: 'white' }}>
-            Idle time: {(idleTime / 1000).toFixed(1)}s
-          </Text>
+          <Text style={{ color: 'white' }}>Idle time: {(idleTime / 1000).toFixed(1)}s</Text>
           <Text style={{ color: isIdle ? 'red' : 'green' }}>
             {isIdle ? 'User idle' : 'User active'}
           </Text>
@@ -152,65 +157,72 @@ function ChapterContent({
           transparent
           visible={idleModalVisible}
           animationType="fade"
-          onRequestClose={() => setIdleModalVisible(false)}
-        >
+          onRequestClose={() => setIdleModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
               <TouchableOpacity
                 style={styles.modalCloseX}
-                onPress={() => setIdleModalVisible(false)}
-              >
+                onPress={() => setIdleModalVisible(false)}>
                 <Text style={styles.modalCloseXText}>✕</Text>
               </TouchableOpacity>
               <Text style={styles.modalTitle}>Need a hand?</Text>
               <Text style={styles.modalBody}>
-                You've been on this page for a while. Would you like help understanding it?
+                You&apos;ve been on this page for a while. Would you like help understanding it?
               </Text>
 
-              <TouchableOpacity style={styles.modalOption} onPress={() => {
-                setIdleModalVisible(false);
-                setAiOverlayVisible(true);
-              }}>
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={() => {
+                  setIdleModalVisible(false);
+                  setAiOverlayVisible(true);
+                }}>
                 <Text style={styles.modalOptionTitle}>Ask the AI</Text>
                 <Text style={styles.modalOptionSub}>Chat about this chapter</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.modalOption} onPress={() => {
-                setIdleModalVisible(false);
-                setAiOverlayVisible(true);
-                // navigate to flashcards
-              }}>
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={() => {
+                  setIdleModalVisible(false);
+                  setAiOverlayVisible(true);
+                  // navigate to flashcards
+                }}>
                 <Text style={styles.modalOptionTitle}>Flashcards</Text>
                 <Text style={styles.modalOptionSub}>Review key concepts</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.modalOption} onPress={() => {
-                setIdleModalVisible(false);
-                setAiOverlayVisible(true);
-                // navigate to quiz
-              }}>
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={() => {
+                  setIdleModalVisible(false);
+                  setAiOverlayVisible(true);
+                  // navigate to quiz
+                }}>
                 <Text style={styles.modalOptionTitle}>Take a quiz</Text>
                 <Text style={styles.modalOptionSub}>Test your understanding</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.modalKeepReading} onPress={() => {
-                setIdleModalVisible(false);
-                resetIdle();
-              }}>
+              <TouchableOpacity
+                style={styles.modalKeepReading}
+                onPress={() => {
+                  setIdleModalVisible(false);
+                  resetIdle();
+                }}>
                 <Text style={styles.modalKeepReadingText}>Keep reading</Text>
               </TouchableOpacity>
 
               {/* stop asking button */}
-              <TouchableOpacity style={styles.modalStopAsking} onPress={() => {
-                setStopAskingEnabled(true);
-                setIdleModalVisible(false);
-              }}>
+              <TouchableOpacity
+                style={styles.modalStopAsking}
+                onPress={() => {
+                  setStopAskingEnabled(true);
+                  setIdleModalVisible(false);
+                }}>
                 <Text style={styles.modalStopAskingText}>Stop asking</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
-
       </View>
     </TouchableWithoutFeedback>
   );
