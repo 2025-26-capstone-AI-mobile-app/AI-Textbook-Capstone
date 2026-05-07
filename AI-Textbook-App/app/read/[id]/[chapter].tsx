@@ -64,8 +64,9 @@ function ChapterContent({
 }) {
   const [pdfUrl, setPdfUrl] = useState('');
   const [aiOverlayVisible, setAiOverlayVisible] = useState(false);
-  const [idleModalVisible, setIdleModalVisible] = useState(false);  // NEW
+  const [idleModalVisible, setIdleModalVisible] = useState(false);
   const { idleTime, isIdle, resetIdle } = useScrollIdleTime(4000);
+  const [stopAskingEnabled, setStopAskingEnabled] = useState(false);
 
   // Existing effect — fetches PDF
   useEffect(() => {
@@ -89,7 +90,7 @@ function ChapterContent({
 
   // New effect — shows idle modal
   useEffect(() => {
-    if (isIdle && !aiOverlayVisible) {
+    if (isIdle && !aiOverlayVisible && !stopAskingEnabled) {
       setIdleModalVisible(true);
     }
   }, [isIdle]);
@@ -155,6 +156,12 @@ function ChapterContent({
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
+              <TouchableOpacity
+                style={styles.modalCloseX}
+                onPress={() => setIdleModalVisible(false)}
+              >
+                <Text style={styles.modalCloseXText}>✕</Text>
+              </TouchableOpacity>
               <Text style={styles.modalTitle}>Need a hand?</Text>
               <Text style={styles.modalBody}>
                 You've been on this page for a while. Would you like help understanding it?
@@ -170,6 +177,7 @@ function ChapterContent({
 
               <TouchableOpacity style={styles.modalOption} onPress={() => {
                 setIdleModalVisible(false);
+                setAiOverlayVisible(true);
                 // navigate to flashcards
               }}>
                 <Text style={styles.modalOptionTitle}>Flashcards</Text>
@@ -178,17 +186,26 @@ function ChapterContent({
 
               <TouchableOpacity style={styles.modalOption} onPress={() => {
                 setIdleModalVisible(false);
+                setAiOverlayVisible(true);
                 // navigate to quiz
               }}>
                 <Text style={styles.modalOptionTitle}>Take a quiz</Text>
                 <Text style={styles.modalOptionSub}>Test your understanding</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => {
+              <TouchableOpacity style={styles.modalKeepReading} onPress={() => {
                 setIdleModalVisible(false);
                 resetIdle();
               }}>
-                <Text style={styles.modalDismiss}>Keep reading</Text>
+                <Text style={styles.modalKeepReadingText}>Keep reading</Text>
+              </TouchableOpacity>
+
+              {/* stop asking button */}
+              <TouchableOpacity style={styles.modalStopAsking} onPress={() => {
+                setStopAskingEnabled(true);
+                setIdleModalVisible(false);
+              }}>
+                <Text style={styles.modalStopAskingText}>Stop asking</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -324,10 +341,44 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 2,
   },
-  modalDismiss: {
-    textAlign: 'center',
-    marginTop: 8,
+  modalCloseX: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  modalCloseXText: {
+    fontSize: 13,
+    color: '#555',
+    fontWeight: '500',
+  },
+  modalKeepReading: {
+    marginTop: 12,
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalKeepReadingText: {
+    color: '#fff',
     fontSize: 14,
-    color: '#888',
+    fontWeight: '600',
+  },
+  modalStopAsking: {
+    marginTop: 8,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalStopAskingText: {
+    color: '#FF3B30',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
