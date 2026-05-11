@@ -5,12 +5,12 @@ import {
   Text,
   StyleSheet,
   Alert,
-  Button,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import Modal from 'react-native-modal';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
 import { Question, Quiz, QuizResult } from '@/types/quizTypes';
 import { SelectList } from 'react-native-dropdown-select-list';
@@ -55,26 +55,22 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
       });
   };
 
-  // Get Token
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });
 
-  // Get old quizzes
   useEffect(() => {
     if (quizzes === null) {
       updateQuizzes();
     }
   });
 
-  // Get subchapters
   useEffect(() => {
     if (subChapters.length === 0 && token.length > 0) {
       updateQuizList();
     }
   });
 
-  // Gets list of quizzes from the backend
   const updateQuizList = () => {
     fetchTextbookContent(textbookId, token).then((data: any) => {
       if (data) {
@@ -84,7 +80,6 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     });
   };
 
-  // Generate new quiz
   const createQuiz = () => {
     if (selectedSubChapter) {
       setLoading(true);
@@ -101,7 +96,6 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     }
   };
 
-  // Open Quiz overlay
   const openQuiz = (quiz: Question[], title: string) => {
     setQuizTitle(title);
     setShowCorrectAnswers(false);
@@ -110,7 +104,6 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setQuizOpen(true);
   };
 
-  // Close quiz overlay
   const closeQuiz = () => {
     setQuizOpen(false);
     setShowCorrectAnswers(false);
@@ -120,7 +113,6 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setLoading(false);
   };
 
-  // Grade the currently openned quiz
   const gradeQuiz = (): QuizResult => {
     if (!currentQuiz || quizChoices.length === 0)
       return { correctAnswers: 0, totalQuestions: 0, grade: -1 };
@@ -149,25 +141,21 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
     setQuizChoices(new Array(currentQuiz.length).fill(-1));
   };
 
-  // Given the index of the question and the index of the choice, returns a color
   const setQuizOptionColor = (qIndex: number, cIndex: number) => {
     if (!currentQuiz) return {};
 
     if (showCorrectAnswers) {
       if (quizChoices[qIndex] === cIndex) {
-        //this option has been selected by the user
         if (cIndex === currentQuiz[qIndex].answer) {
-          // user selected correct answer
-          return { backgroundColor: 'green' };
+          return { backgroundColor: '#34C759', borderColor: '#34C759' };
         } else {
-          return { backgroundColor: 'orange' };
+          return { backgroundColor: '#FF9500', borderColor: '#FF9500' };
         }
       } else if (cIndex === currentQuiz[qIndex].answer) {
-        return { backgroundColor: 'green' };
+        return { backgroundColor: '#34C759', borderColor: '#34C759' };
       }
     } else if (quizChoices[qIndex] === cIndex) {
-      //this option has been selected by the user
-      return { backgroundColor: '#007AFF' };
+      return { backgroundColor: '#007AFF', borderColor: '#007AFF' };
     }
 
     return {};
@@ -176,216 +164,214 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
-        {/* Title and close button */}
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
+        </View>
+
         <View style={styles.titleBar}>
           <Text style={styles.title}>Create New Quiz</Text>
-          <View style={styles.closeButton}>
-            <Button title="X" onPress={closeFunc} color="black"></Button>
-          </View>
+          <TouchableOpacity style={styles.closeButton} onPress={closeFunc} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={32} color="#8E8E93" />
+          </TouchableOpacity>
         </View>
 
-        {/* Quiz form */}
-        <View>
-          <Text style={styles.subTitle}>Subchapter </Text>
-          {subChapters.length > 0 ? <Text testID="testText"></Text> : []}
-          <SelectList
-            setSelected={(val) => setSelectedSubChapter(val)}
-            data={subChapters.map((c) => ({ key: c.title, value: c.title }))}
-            save="value"
-            boxStyles={styles.selectorButton}
-            inputStyles={styles.selectorButtonText}
-            dropdownTextStyles={styles.selectorButtonText}
-            arrowicon={<></>}
-            searchicon={<View testID="searchIcon" />} // Should change this later. Test id is required though
-          />
-
-          {/**  <SelectDropdown
-          //   testID='subChapterDropDown'
-          //   ref={selectorRef}
-          //   data={subChapters}
-          //   onSelect={(selectedItem) => {
-          //     setSelectedSubChapter(selectedItem.title);
-          //   }}
-          //   renderButton={(selectedItem: { title: string }) => (
-          //     <View style={styles.selectorButton} testID='subChapterDropDownButton'>
-          //       <Text style={styles.selectorButtonText}>
-          //         {selectedItem ? selectedItem.title : 'Select a subchapter to focus on'}
-          //       </Text>
-          //     </View>
-          //   )}
-          //   renderItem={(item: { title: string }, index: number, isSelected: boolean) => (
-          //     <View testID={'dropDownItem:' + index} style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
-          //       <Text style={styles.selectorButtonText}>{item ? item.title : ''}</Text>
-          //     </View>
-          //   )}></SelectDropdown> */}
-
-          <Text style={styles.subTitle}>Number of Questions</Text>
-          <SelectList
-            setSelected={(val) => setSelectedQuestionCount(val)}
-            data={allowedQuestionCounts.map((c) => ({ key: c, value: c + '' }))}
-            save="key"
-            boxStyles={styles.selectorButton}
-            inputStyles={styles.selectorButtonText}
-            dropdownTextStyles={styles.selectorButtonText}
-            arrowicon={<></>}
-            searchicon={<View testID="searchIcon" />}
-            defaultOption={{ key: 5, value: '5' }}
-          />
-
-          {/*<SelectDropdown
-            ref={selectorRef}
-            data={allowedQuestionCounts}
-            defaultValue={5}
-            onSelect={(selectedItem) => {
-              setSelectedQuestionCount(selectedItem);
-            }}
-            renderButton={(selectedItem) => (
-              <View style={styles.selectorButton}>
-                <Text style={styles.selectorButtonText}>{selectedItem}</Text>
-              </View>
-            )}
-            renderItem={(item, index, isSelected) => (
-              <View style={{ ...styles.selectorItem, ...(isSelected && styles.selectedItem) }}>
-                <Text style={styles.selectorButtonText}>{item}</Text>
-              </View>
-            )}></SelectDropdown>*/}
-
-          <View style={styles.submitButton}>
-            <Button
-              testID="GenerateButton"
-              color="white"
-              background-color="#007AFF"
-              title="Generate"
-              onPress={createQuiz}></Button>
+        <ScrollView style={styles.formScroll} showsVerticalScrollIndicator={false}>
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Subchapter</Text>
+            {subChapters.length > 0 ? <Text testID="testText"></Text> : []}
+            <SelectList
+              setSelected={(val: string) => setSelectedSubChapter(val)}
+              data={subChapters.map((c) => ({ key: c.title, value: c.title }))}
+              save="value"
+              boxStyles={styles.selectorButton}
+              inputStyles={styles.selectorButtonText}
+              dropdownTextStyles={styles.selectorDropdownText}
+              dropdownStyles={styles.selectorDropdown}
+              arrowicon={<Ionicons name="chevron-down" size={18} color="#8E8E93" />}
+              searchicon={<View testID="searchIcon" />}
+            />
           </View>
-        </View>
 
-        {/* Previous quizzes */}
-        <View style={styles.flexBox}>
-          <Text style={{ ...styles.subTitle, ...styles.titleBar }}>View Previous Quizzes</Text>
-          <ScrollView>
-            {quizzes && quizzes.map ? ( // I don't know why, but this doesn't work without quizzes.map
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Number of Questions</Text>
+            <SelectList
+              setSelected={(val: number) => setSelectedQuestionCount(val)}
+              data={allowedQuestionCounts.map((c) => ({ key: c, value: c + '' }))}
+              save="key"
+              boxStyles={styles.selectorButton}
+              inputStyles={styles.selectorButtonText}
+              dropdownTextStyles={styles.selectorDropdownText}
+              dropdownStyles={styles.selectorDropdown}
+              arrowicon={<Ionicons name="chevron-down" size={18} color="#8E8E93" />}
+              searchicon={<View testID="searchIcon" />}
+              defaultOption={{ key: 5, value: '5' }}
+            />
+          </View>
+
+          <TouchableOpacity
+            testID="GenerateButton"
+            style={styles.generateButton}
+            activeOpacity={0.8}
+            onPress={createQuiz}>
+            <Ionicons name="sparkles" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.generateButtonText}>Generate</Text>
+          </TouchableOpacity>
+
+          <View style={styles.previousSection}>
+            <Text style={styles.previousTitle}>Previous Quizzes</Text>
+            {quizzes && quizzes.map ? (
               quizzes.map((quiz) => {
                 return (
                   <TouchableOpacity
                     key={quiz._id}
-                    style={styles.quizSelector}
+                    style={styles.quizRow}
+                    activeOpacity={0.6}
                     onPress={() => openQuiz(quiz.quiz, quiz.hint)}>
-                    <Text style={styles.quizSelectorText}>{quiz.hint}</Text>
-                    <Text style={styles.quizSelectorSubText}>
-                      {new Date(quiz.created_time * 1000).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </Text>
+                    <View style={styles.quizRowIconContainer}>
+                      <Ionicons name="document-text" size={18} color="#8E8E93" />
+                    </View>
+                    <View style={styles.quizRowTextContainer}>
+                      <Text style={styles.quizRowTitle}>{quiz.hint}</Text>
+                      <Text style={styles.quizRowDate}>
+                        {new Date(quiz.created_time * 1000).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#48484A" />
                   </TouchableOpacity>
                 );
               })
             ) : (
-              <Text>No Quizzes</Text>
+              <Text style={styles.emptyText}>No Quizzes</Text>
             )}
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </View>
 
       <Modal coverScreen={false} hasBackdrop={false} isVisible={loading} style={styles.modal}>
-        <View style={{ ...styles.overlayContent, ...styles.loadingView }}>
-          <ActivityIndicator style={{ paddingRight: 20 }} size="large" color="#007AFF" />
-          <Text style={{ ...styles.loadingText }}>Loading...</Text>
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.loadingText}>Generating quiz...</Text>
+          </View>
         </View>
       </Modal>
 
-      {/* Actual quiz */}
       <Modal coverScreen={false} hasBackdrop={false} isVisible={quizOpen} style={styles.modal}>
         <View testID="openQuiz" style={styles.overlayContent}>
-          {/* Title and close button */}
-          <View style={styles.titleBar}>
-            <Text style={styles.title}>{quizTitle}</Text>
-            <View style={styles.closeButton}>
-              <Button title="X" onPress={closeQuiz} color="black"></Button>
-            </View>
+          <View style={styles.dragHandleContainer}>
+            <View style={styles.dragHandle} />
           </View>
+
+          <View style={styles.titleBar}>
+            <Text style={styles.title} numberOfLines={1}>{quizTitle}</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={closeQuiz} activeOpacity={0.7}>
+              <Ionicons name="close-circle" size={32} color="#8E8E93" />
+            </TouchableOpacity>
+          </View>
+
           {showCorrectAnswers ? (
-            <Text
-              style={styles.subTitle}
-              testID={
-                'testResults:' + quizResult?.correctAnswers + '/' + quizResult?.totalQuestions
-              }>
-              Score {quizResult?.correctAnswers}/{quizResult?.totalQuestions}
-            </Text>
+            <View style={styles.scoreBar}>
+              <Ionicons
+                name={quizResult && quizResult.grade >= 0.7 ? 'trophy' : 'analytics'}
+                size={24}
+                color={quizResult && quizResult.grade >= 0.7 ? '#FFD60A' : '#007AFF'}
+              />
+              <Text
+                style={styles.scoreText}
+                testID={
+                  'testResults:' + quizResult?.correctAnswers + '/' + quizResult?.totalQuestions
+                }>
+                Score: {quizResult?.correctAnswers}/{quizResult?.totalQuestions}
+              </Text>
+              <Text style={styles.scorePercentage}>
+                {quizResult ? Math.round(quizResult.grade * 100) : 0}%
+              </Text>
+            </View>
           ) : (
             []
           )}
 
-          {/* Questions */}
-          <ScrollView ref={quizScrollRef}>
+          <ScrollView ref={quizScrollRef} showsVerticalScrollIndicator={false}>
             {currentQuiz
               ? currentQuiz.map((question, index) => (
-                  <View key={index} style={styles.questionView}>
-                    <Text testID={'Q' + (index + 1)} style={styles.subTitle}>
-                      {index + 1}. {question.question}
-                    </Text>
-                    {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
-                      <Text testID={'Q' + (index + 1) + 'T'} style={styles.correct}>
+                <View key={index} style={styles.questionCard}>
+                  <Text testID={'Q' + (index + 1)} style={styles.questionText}>
+                    {index + 1}. {question.question}
+                  </Text>
+                  {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
+                    <View style={styles.resultBadge}>
+                      <Ionicons name="checkmark-circle" size={16} color="#34C759" />
+                      <Text testID={'Q' + (index + 1) + 'T'} style={styles.correctText}>
                         Correct
                       </Text>
-                    ) : showCorrectAnswers ? (
-                      <Text testID={'Q' + (index + 1) + 'F'} style={styles.incorrect}>
+                    </View>
+                  ) : showCorrectAnswers ? (
+                    <View style={styles.resultBadge}>
+                      <Ionicons name="close-circle" size={16} color="#FF453A" />
+                      <Text testID={'Q' + (index + 1) + 'F'} style={styles.incorrectText}>
                         Incorrect
                       </Text>
-                    ) : (
-                      []
-                    )}
+                    </View>
+                  ) : (
+                    []
+                  )}
 
-                    {/* Options */}
-                    {question.choices.map((choice, cIndex) => (
-                      <TouchableOpacity
-                        style={{ ...styles.quizChoice, ...setQuizOptionColor(index, cIndex) }}
-                        key={cIndex}
-                        onPress={() => {
-                          quizChoices[index] = cIndex;
-                          setQuizChoices([...quizChoices]);
-                        }}
-                        disabled={showCorrectAnswers}
-                        testID={'Q' + (index + 1) + 'C' + cIndex}>
-                        <Text style={styles.quizChoiceText}>{choice}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                ))
+                  {question.choices.map((choice, cIndex) => (
+                    <TouchableOpacity
+                      style={[styles.choiceButton, setQuizOptionColor(index, cIndex)]}
+                      key={cIndex}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        quizChoices[index] = cIndex;
+                        setQuizChoices([...quizChoices]);
+                      }}
+                      disabled={showCorrectAnswers}
+                      testID={'Q' + (index + 1) + 'C' + cIndex}>
+                      <Text style={styles.choiceText}>{choice}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))
               : []}
-            <View style={styles.submitButton}>
-              <Button
-                color="white"
-                background-color="#007AFF"
-                title="Submit"
-                onPress={submitQuiz}
-                disabled={quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers}
-                testID="SubmitButton"></Button>
-            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                (quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers) &&
+                styles.actionButtonDisabled,
+              ]}
+              activeOpacity={0.8}
+              onPress={submitQuiz}
+              disabled={quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers}
+              testID="SubmitButton">
+              <Text style={styles.actionButtonText}>Submit</Text>
+            </TouchableOpacity>
+
             {showCorrectAnswers ? (
-              <View style={styles.submitButton}>
-                <Button
-                  color="white"
-                  background-color="#007AFF"
-                  title="Try again"
-                  onPress={resetQuiz}
-                  testID="resetButton"></Button>
-              </View>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                activeOpacity={0.8}
+                onPress={resetQuiz}
+                testID="resetButton">
+                <Ionicons name="refresh" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.actionButtonText}>Try Again</Text>
+              </TouchableOpacity>
             ) : (
               []
             )}
 
             {quizChoices.filter((val) => val === -1).length > 0 ? (
-              <Text style={styles.warning}>Please answer all questions</Text>
+              <Text style={styles.warningText}>Please answer all questions</Text>
             ) : (
               []
             )}
 
-            {/* This is just a spacer at the bottom */}
             <View style={{ height: 60 }}></View>
           </ScrollView>
         </View>
@@ -400,203 +386,255 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    display: 'flex',
     height: '100%',
     width: '100%',
-    backgroundColor: '#383737ff',
+    backgroundColor: '#1C1C1E',
     marginTop: 'auto',
-    padding: 20,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  title: {
-    flex: 1,
-    fontSize: 30,
-    color: 'white',
-    fontWeight: 'bold',
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
   },
-  subTitle: {
-    fontSize: 25,
-    color: 'white',
-    fontWeight: 'bold',
-    marginTop: 10,
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3A3A3C',
   },
   titleBar: {
     flexDirection: 'row',
-    borderBottomColor: 'white',
-    paddingBottom: 10,
-    borderBottomWidth: 2,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   closeButton: {
-    borderRadius: 20,
-    backgroundColor: '#ffffff68',
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignContent: 'center',
-    color: 'white',
+    padding: 4,
   },
-  newChatButton: {
-    paddingTop: 15,
-    paddingBottom: 15,
+  formScroll: {
+    flex: 1,
+    marginTop: 8,
   },
-  quizSelector: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'white',
-    justifyContent: 'center',
-    paddingTop: 5,
-    paddingBottom: 5,
+  formSection: {
+    marginBottom: 24,
   },
-  quizSelectorText: {
-    color: 'white',
-    fontSize: 20,
-  },
-  quizSelectorSubText: {
-    color: 'grey',
-    fontSize: 15,
-  },
-  chatView: {
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-    borderWidth: 1,
-    borderColor: 'white',
-  },
-  chatSendButton: {
-    justifyContent: 'center',
-    alignContent: 'center',
-    height: 50,
-    width: 50,
-  },
-  inputContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    marginBottom: 30,
-  },
-  assistantMessage: {
-    maxWidth: '80%',
-    backgroundColor: '#ffffff68',
-    margin: 10,
-    padding: 10,
-    borderRadius: 10,
-  },
-  userMessage: {
-    maxWidth: '80%',
-    backgroundColor: '#00c8ff68',
-    margin: 10,
-    padding: 10,
-    borderRadius: 10,
-    marginLeft: 'auto',
-  },
-  userMessageText: {
-    fontSize: 17,
-  },
-  assistantMessageText: {
-    fontSize: 17,
-    textAlign: 'left',
-  },
-  userTimeStampText: {
-    textAlign: 'right',
-    paddingRight: 10,
-    paddingBottom: 10,
-    color: 'white',
-  },
-  assistantTimeStampText: {
-    textAlign: 'left',
-    paddingLeft: 10,
-    paddingBottom: 10,
-    color: 'white',
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginTop: 8,
   },
   selectorButton: {
     backgroundColor: '#2C2C2E',
-    borderRadius: 10,
+    borderRadius: 12,
     height: 50,
     paddingHorizontal: 16,
-    color: '#FFFFFF',
-    fontSize: 16,
-    paddingRight: 50,
-    justifyContent: 'center',
-    alignContent: 'center',
-    flexDirection: 'column',
+    borderWidth: 1,
+    borderColor: '#3A3A3C',
+    alignItems: 'center',
   },
   selectorButtonText: {
-    color: 'white',
-    fontSize: 20,
-    textAlign: 'center',
-  },
-  selectorItem: {
-    backgroundColor: '#2C2C2E',
-    height: 50,
-    paddingHorizontal: 16,
     color: '#FFFFFF',
     fontSize: 16,
-    paddingRight: 50,
+  },
+  selectorDropdownText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  selectorDropdown: {
+    backgroundColor: '#2C2C2E',
+    borderColor: '#3A3A3C',
+    borderRadius: 12,
+  },
+  generateButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    marginBottom: 28,
   },
-  selectedItem: {
-    backgroundColor: '#38383a',
+  generateButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
   },
-  input: {
-    flex: 1,
+  previousSection: {
+    marginTop: 4,
+  },
+  previousTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+    marginBottom: 4,
+  },
+  quizRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  quizRowIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: '#2C2C2E',
-    borderRadius: 10,
-    height: 50,
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  quizRowTextContainer: {
+    flex: 1,
+  },
+  quizRowTitle: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '500',
   },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    color: 'white',
-    borderRadius: 10,
+  quizRowDate: {
+    color: '#8E8E93',
+    fontSize: 13,
+    marginTop: 2,
   },
-  questionView: {
-    backgroundColor: '#2C2C2E',
-    padding: 20,
-    paddingTop: 10,
-    margin: 5,
-    borderRadius: 10,
-    borderColor: '#4e4e52',
-    borderWidth: 1,
-    borderStyle: 'solid',
-  },
-  quizChoice: {
-    backgroundColor: '#383737ff',
-    margin: 5,
-    padding: 10,
-    borderRadius: 10,
-    borderColor: '#4e4e52',
-    borderWidth: 1,
-    borderStyle: 'solid',
-  },
-  quizChoiceText: {
-    color: 'white',
-    fontSize: 20,
-  },
-  quizSelectedChoice: {
-    backgroundColor: '#007AFF',
-  },
-  warning: {
-    color: 'red',
+  emptyText: {
+    color: '#8E8E93',
+    fontSize: 15,
     textAlign: 'center',
+    paddingVertical: 24,
   },
-  correct: {
-    color: 'green',
-    fontSize: 20,
-  },
-  incorrect: {
-    color: 'red',
-    fontSize: 20,
-  },
-  flexBox: {
-    flex: 1,
-  },
-  loadingView: {
-    flexDirection: 'row',
+  loadingOverlay: {
+    height: '100%',
+    width: '100%',
+    backgroundColor: '#1C1C1E',
+    marginTop: 'auto',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  loadingCard: {
+    alignItems: 'center',
+    gap: 20,
+  },
   loadingText: {
-    fontSize: 40,
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#8E8E93',
+    fontWeight: '600',
+  },
+  scoreBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
+    gap: 10,
+  },
+  scoreText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+  },
+  scorePercentage: {
+    color: '#007AFF',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  questionCard: {
+    backgroundColor: '#2C2C2E',
+    padding: 20,
+    paddingTop: 16,
+    marginVertical: 6,
+    borderRadius: 14,
+    borderColor: '#3A3A3C',
+    borderWidth: 1,
+  },
+  questionText: {
+    fontSize: 17,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  resultBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  correctText: {
+    color: '#34C759',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  incorrectText: {
+    color: '#FF453A',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  choiceButton: {
+    backgroundColor: '#1C1C1E',
+    marginVertical: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderColor: '#3A3A3C',
+    borderWidth: 1,
+  },
+  choiceText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  actionButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  actionButtonDisabled: {
+    backgroundColor: '#2C2C2E',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    backgroundColor: '#2C2C2E',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#3A3A3C',
+  },
+  warningText: {
+    color: '#FF453A',
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 12,
   },
 });

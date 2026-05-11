@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '80%',
+    height: '100%',
     width: '100%',
     backgroundColor: '#1C1C1E',
     marginTop: 'auto',
