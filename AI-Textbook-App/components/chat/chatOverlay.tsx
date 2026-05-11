@@ -1,4 +1,4 @@
-import { fetchChats, loadChat, STREAM_DONE_STRING, streamMessage, updateChatSummary } from '@/api/chat/aiChatApi';
+import { fetchChats, loadChat, streamMessage, updateChatSummary } from '@/api/chat/aiChatApi';
 import { ChatSession, Message } from '@/types/chatTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -15,6 +15,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 import { logout } from '@/api/login/loginApi';
+import Animated, { useSharedValue } from 'react-native-reanimated';
 
 type Props = {
   isVisible: boolean;
@@ -35,16 +36,32 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [messages, setMessages] = useState<Message[]>([]);
   const [scrollOffset, setScrollOffset] = useState<number>(0); //used to auto scroll to bottom on load
   const [chatViewHeight, setChatViewHeight] = useState<number>(0);
-  const [lastMessageHeight, setlastMessageHeight] = useState<number>(0);
-  const [lastChunks, setLastChunks] = useState<string[]>([STREAM_DONE_STRING]);
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [lastMessageLen, setLastMessageLen] = useState<number>(0);
   const chatRef = useRef(null);
-  const lastMessageRef = useRef(null);
+
+  const TEXT_ANIMATION_TIMEOUT = 10;
+  const TEXT_ANIMATION_SPEED = 5;
 
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
+  });
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (
+        lastMessage.role == 'assistant' &&
+        lastMessage.id != TEMP_MESSAGE_ID &&
+        lastMessage.content.length > lastMessageLen
+      ) {
+        setTimeout(() => {
+          setLastMessageLen(lastMessageLen + TEXT_ANIMATION_SPEED);
+        }, TEXT_ANIMATION_TIMEOUT);
+      }
+    }
   });
 
   const updateChats = (t?: string) => {
@@ -90,15 +107,12 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     chatRef.current?.measure((_x: number, _y: number, _width: number, height: number) => {
       setChatViewHeight(height);
     });
-
-    lastMessageRef.current?.measure((_x: number, _y: number, _width: number, height: number) => {
-      setlastMessageHeight(height);
-    });
   });
 
   // Opens chat given session id
   const openChat = async (chatId: string, title: string) => {
     try {
+      setLastMessageLen(1000000);
       setChatOpen(true);
       setChatTitle(title);
       const resp = await loadChat(token, chatId);
@@ -114,6 +128,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
       setSessionId(chatId);
     } catch {
+      setLastMessageLen(0);
       setMessages([
         {
           id: '',
@@ -130,6 +145,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     setChatOpen(true);
     setChatTitle('New Chat');
     setSessionId(null);
+    setLastMessageLen(1000000);
   };
 
   // Closes chat window
@@ -192,8 +208,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         return;
       }
 
-
-      setLastChunks(response.chunks);
+      setLastMessageLen(0);
       setMessages((messages) =>
         messages.map((msg) =>
           msg.id === TEMP_MESSAGE_ID
@@ -214,23 +229,6 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     }
     setChatInputEnabled(true);
   };
-
-  const READ_DONE_STRING = '!!DONE_READING'
-  useEffect(() =>{
-    setTimeout(() => {
-      if(lastChunks.length > 0 && messages.length > 0 && lastChunks[lastChunks.length - 1] !== READ_DONE_STRING){
-        setMessages((messages) => {
-          messages[messages.length - 1].content = lastChunks.slice(0, lastChunks.length - 1).join('');
-          return [...messages]
-        })
-
-        if(lastChunks[lastChunks.length - 1] === STREAM_DONE_STRING){
-          console.log('Done reading stream')
-          lastChunks.push(READ_DONE_STRING)
-        }
-      }
-    }, 200)
-  })
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -296,9 +294,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             contentOffset={{ x: 0, y: scrollOffset }}
             ref={chatRef}
             onContentSizeChange={(_width, height) => {
-              if((chatViewHeight) < height){
-                setScrollOffset(height - chatViewHeight);
-              }
+              setScrollOffset(height - chatViewHeight);
             }}>
             {messages.map((message: Message, index: number) => {
               let content = message.content;
@@ -306,9 +302,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                 content = '...';
               }
               return (
-                <View 
-                  key={message.id}
-                  ref={index === messages.length - 1 ? null : lastMessageRef}>
+                <View key={message.id}>
                   <View
                     style={
                       message.role === 'assistant' ? styles.assistantMessage : styles.userMessage
@@ -319,7 +313,9 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                           ? styles.assistantMessageText
                           : styles.userMessageText
                       }>
-                      {content}
+                      {index == messages.length - 1
+                        ? content.substring(0, lastMessageLen)
+                        : content}
                     </Text>
                   </View>
                   <Text

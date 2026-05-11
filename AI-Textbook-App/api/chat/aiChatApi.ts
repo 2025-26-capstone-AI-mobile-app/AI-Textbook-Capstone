@@ -56,12 +56,10 @@ export async function loadChat(token: string, sessionId: string): Promise<Messag
     }
 }
 
-export const STREAM_DONE_STRING = '!!DONE'
 interface ChatResponse{
 	session: string | null,
 	branchCandiate: BranchCandidate | null, 
-	msg: string,
-	chunks: string[],
+	msg: string
 }
 
 // Updates summary for an AI chat session. Needs to be called whenever a user finishes
@@ -138,24 +136,21 @@ export async function streamMessage(token: string , message: string, textbook_id
       console.error("Backend stream error:", backendResponse.status, errorText)
 
 	  if(backendResponse.status == 401){
-		return {session: null,branchCandiate: null, msg: `Invalid Token`, chunks: [STREAM_DONE_STRING]};
+		return {session: null,branchCandiate: null, msg: `Invalid Token`};
 	  }
-      return {session: session_id,branchCandiate: null, msg: `Network error: ${errorText}`, chunks: [STREAM_DONE_STRING]};
+      return {session: session_id,branchCandiate: null, msg: `Network error: ${errorText}`};
     }
 
 	console.log(backendResponse.body);
 	if(backendResponse.body){
-		const chunks: string[] = [];
-		parseStream(backendResponse.body, session_id, chunks);
-		return {session: session_id, branchCandiate: null, msg: "Success", chunks: chunks};
-
+		return await parseStream(backendResponse.body, session_id);
 	} else{
 		console.error("Failed to parse body")
-		return {session: session_id, branchCandiate: null, msg: "Network error: Failed to parse body", chunks: [STREAM_DONE_STRING]};
+		return {session: session_id, branchCandiate: null, msg: "Network error: Failed to parse body"};
 	}
   } catch (error) {
     console.error("Error in stream proxy:", error)
-    return {session: session_id, branchCandiate: null, msg: `Network error: ${error}`, chunks: [STREAM_DONE_STRING]};
+    return {session: session_id, branchCandiate: null, msg: `Network error: ${error}`};
   }
 }
 
@@ -187,10 +182,11 @@ const isStreamBranchData = (data: StreamData): data is StreamBranchData => "star
 const isStreamDoneData = (data: StreamData): data is StreamDoneData => "done" in data
 const isStreamErrorData = (data: StreamData): data is StreamErrorData => "error" in data
 
-async function parseStream(streamRes: ReadableStream<Uint8Array<ArrayBuffer>>, session_id: string | null, chunks: string[] = []) : Promise<ChatResponse>{
+async function parseStream(streamRes: ReadableStream<Uint8Array<ArrayBuffer>>, session_id: string | null) : Promise<ChatResponse>{
 	const reader = streamRes.getReader()
 	const decoder = new TextDecoder()
 	let buffer = ""
+	const chunks: string[] = []
 	const rawDataReceived: string[] = []
 	let branchCandidate: BranchCandidate | null = null; 
 
@@ -280,9 +276,7 @@ async function parseStream(streamRes: ReadableStream<Uint8Array<ArrayBuffer>>, s
 				if (isStreamErrorData(data)) {
 					let error = data as StreamErrorData
 					console.log("[v0] ❌ Error in stream:", data.error)
-					chunks.push(`⚠️ ${error}`)
-					chunks.push(STREAM_DONE_STRING)
-					return {session: session_id,branchCandiate: branchCandidate, msg: `⚠️ ${error}`, chunks: []};
+					return {session: session_id,branchCandiate: branchCandidate, msg: `⚠️ ${error}`};
 				}
 			} catch (parseError) {
 				console.error("[v0] 💥 Failed to parse stream data:", parseError, "Raw line:", line)
@@ -291,6 +285,5 @@ async function parseStream(streamRes: ReadableStream<Uint8Array<ArrayBuffer>>, s
 		}
 	}
 
-	chunks.push(STREAM_DONE_STRING)
-	return {session: session_id, branchCandiate: branchCandidate, msg: chunks.join(""), chunks: []};
+	return {session: session_id, branchCandiate: branchCandidate, msg: chunks.join("")};
 }
