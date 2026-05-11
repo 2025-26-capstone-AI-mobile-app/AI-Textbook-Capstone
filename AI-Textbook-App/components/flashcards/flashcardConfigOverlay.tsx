@@ -118,7 +118,7 @@ export default function FlashcardConfigOverlay({
 
       if (!response.cards || response.cards.length === 0) {
         setError(response.msg || 'Failed to generate flashcards');
-        if(response.msg === 'Invalid token'){
+        if (response.msg === 'Invalid token') {
           Alert.alert('Login expired', 'Please log back in', [
             {
               text: 'Ok',

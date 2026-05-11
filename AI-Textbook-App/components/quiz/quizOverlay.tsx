@@ -91,9 +91,9 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
       setLoading(true);
       generateQuiz(token, '', selectedSubChapter, selectedQuestionCount, chapterId, textbookId)
         .then((quiz) => {
-          if(!Array.isArray(quiz)){
+          if (!Array.isArray(quiz)) {
             //Error
-            if(quiz.detail === 'Invalid token'){
+            if (quiz.detail === 'Invalid token') {
               Alert.alert('Login expired', 'Please log back in', [
                 {
                   text: 'Ok',
@@ -105,7 +105,7 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
             return;
           }
 
-          if(quiz.length > 0){
+          if (quiz.length > 0) {
             openQuiz(quiz, selectedSubChapter);
           }
           setLoading(false);
