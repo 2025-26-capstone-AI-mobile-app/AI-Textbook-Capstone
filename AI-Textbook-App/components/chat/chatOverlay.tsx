@@ -12,7 +12,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import Modal from 'react-native-modal';
 import { logout } from '@/api/login/loginApi';
 import Animated, { useSharedValue } from 'react-native-reanimated';
@@ -40,6 +40,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastMessageLen, setLastMessageLen] = useState<number>(0);
+  const [loggedOut, setLoggedOut] = useState<boolean>(false); //debug variable
   const chatRef = useRef(null);
 
   const TEXT_ANIMATION_TIMEOUT = 10;
@@ -117,6 +118,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       setChatTitle(title);
       const resp = await loadChat(token, chatId);
       if (typeof resp === 'string') {
+        setLoggedOut(true);
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -199,6 +201,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
 
       if (response.session == null && response.msg === 'Invalid Token') {
+        setLoggedOut(true);
         Alert.alert('Login expired', 'Please log back in', [
           {
             text: 'Ok',
@@ -232,10 +235,15 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
+      {/* this is just for debug*/}
+      {loggedOut ? <View testID="loggedOut"></View> : []}
+
       <View style={styles.overlayContent}>
         {/* Title and close button */}
         <View style={styles.titleBar}>
-          <Text style={styles.title}>Chats</Text>
+          <Text style={styles.title} testID="overlayTitle">
+            Chats
+          </Text>
           <View style={styles.closeButton}>
             <Button title="X" onPress={closeFunc} color="black"></Button>
           </View>
@@ -245,7 +253,8 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           {/* Create new chat button */}
           <TouchableOpacity
             style={{ ...styles.chatSelector, ...styles.newChatButton }}
-            onPress={openNewChat}>
+            onPress={openNewChat}
+            testID="newChatButton">
             <Text style={styles.chatSelectorText}>Start new chat</Text>
           </TouchableOpacity>
 
@@ -254,6 +263,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             ? chats.map((session) => {
                 return (
                   <TouchableOpacity
+                    testID={'previousChat' + session.session_id}
                     key={session.session_id}
                     style={styles.chatSelector}
                     onPress={() => openChat(session.session_id, session.title)}>
@@ -306,7 +316,8 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                   <View
                     style={
                       message.role === 'assistant' ? styles.assistantMessage : styles.userMessage
-                    }>
+                    }
+                    testID={'message_' + message.id}>
                     <Text
                       style={
                         message.role === 'assistant'
@@ -334,12 +345,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             <TextInput
               style={styles.chatInput}
               onChangeText={(text) => setChatMessage(text)}
+              testID="chatInput"
               value={chatMessage}
               editable={chatInputEnabled}
             />
             <TouchableOpacity
               style={styles.chatSendButton}
               onPress={sendMessage}
+              testID="sendButton"
               disabled={!chatInputEnabled}>
               <Ionicons name="send" size={24} color="white" />
             </TouchableOpacity>
