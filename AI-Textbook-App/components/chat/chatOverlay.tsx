@@ -40,6 +40,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastMessageLen, setLastMessageLen] = useState<number>(0);
+  const [scrollLocked, setScrollLocked] = useState<boolean>(true)
   const [loggedOut, setLoggedOut] = useState<boolean>(false); //debug variable
   const chatRef = useRef(null);
 
@@ -113,6 +114,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   // Opens chat given session id
   const openChat = async (chatId: string, title: string) => {
     try {
+      setScrollLocked(true)
       setLastMessageLen(1000000);
       setChatOpen(true);
       setChatTitle(title);
@@ -167,6 +169,9 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     // Disable chat textbox
     setChatInputEnabled(false);
 
+    // Snap chat to bottom
+    setScrollLocked(true);
+
     // Add user message and placeholder message to chat
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -200,6 +205,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
         }
       }
 
+      // Check for token error
       if (response.session == null && response.msg === 'Invalid Token') {
         setLoggedOut(true);
         Alert.alert('Login expired', 'Please log back in', [
@@ -212,6 +218,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
 
       setLastMessageLen(0);
+      setScrollLocked(true)
       setMessages((messages) =>
         messages.map((msg) =>
           msg.id === TEMP_MESSAGE_ID
@@ -232,6 +239,17 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
     }
     setChatInputEnabled(true);
   };
+
+  const chatLockTolerance = 10;
+  const onChatEndScroll =  (event: nativeEvent) => {
+    const yOffset = event.contentOffset.y;
+    const contentSize = event.contentSize.height;
+    const layoutHeight = event.layoutMeasurement.height;
+    const delta = contentSize - (yOffset + layoutHeight);
+
+    if(delta < chatLockTolerance)
+      setScrollLocked(true)
+  }
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -288,10 +306,10 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             </Text>
             <View style={styles.closeButton}>
               {/* 
-                                Button is disabled while waiting for Ai response because closing the
-                                chat before the response comes back causes issues. Not a great solution,
-                                but it works.
-                             */}
+                Button is disabled while waiting for Ai response because closing the
+                chat before the response comes back causes issues. Not a great solution,
+                but it works.
+              */}
               <Button
                 title="X"
                 onPress={closeChat}
@@ -302,9 +320,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
           <ScrollView
             style={styles.chatView}
             contentOffset={{ x: 0, y: scrollOffset }}
+            onScrollBeginDrag={() => setScrollLocked(false)}
+            onScrollEndDrag={({nativeEvent}) => onChatEndScroll(nativeEvent)}
+            onMomentumScrollEnd={({nativeEvent}) => onChatEndScroll(nativeEvent)}
             ref={chatRef}
             onContentSizeChange={(_width, height) => {
-              setScrollOffset(height - chatViewHeight);
+              if(scrollLocked){
+                setScrollOffset(height - chatViewHeight);
+              }
             }}>
             {messages.map((message: Message, index: number) => {
               let content = message.content;
@@ -335,7 +358,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                         ? styles.assistantTimeStampText
                         : styles.userTimeStampText
                     }>
-                    {message.timestamp.toLocaleTimeString()}
+                    {message.timestamp.toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric',hour: '2-digit', minute:'2-digit'})}
                   </Text>
                 </View>
               );
@@ -346,7 +369,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
               style={styles.chatInput}
               onChangeText={(text) => setChatMessage(text)}
               testID="chatInput"
-              value={chatMessage}
+              value={chatInputEnabled ? chatMessage : "Awaiting response..."}
               editable={chatInputEnabled}
             />
             <TouchableOpacity
