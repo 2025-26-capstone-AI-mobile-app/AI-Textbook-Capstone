@@ -15,6 +15,7 @@ import { fetchQuizzes, generateQuiz } from '@/api/quiz/aiQuizApi';
 import { Question, Quiz, QuizResult } from '@/types/quizTypes';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
+import { logout } from '@/api/login/loginApi';
 
 type Props = {
   isVisible: boolean;
@@ -90,7 +91,23 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
       setLoading(true);
       generateQuiz(token, '', selectedSubChapter, selectedQuestionCount, chapterId, textbookId)
         .then((quiz) => {
-          openQuiz(quiz, selectedSubChapter);
+          if (!Array.isArray(quiz)) {
+            //Error
+            if (quiz.detail === 'Invalid token') {
+              Alert.alert('Login expired', 'Please log back in', [
+                {
+                  text: 'Ok',
+                  onPress: () => logout(),
+                },
+              ]);
+            }
+            setLoading(false);
+            return;
+          }
+
+          if (quiz.length > 0) {
+            openQuiz(quiz, selectedSubChapter);
+          }
           setLoading(false);
         })
         .catch(() => {
