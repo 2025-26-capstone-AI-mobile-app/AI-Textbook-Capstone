@@ -7,10 +7,11 @@ import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let quizAPI;
+let textbookAPI;
 beforeAll(() => { 
   jest.mock('@react-native-async-storage/async-storage');
   quizAPI = jest.mock('@/api/quiz/aiQuizApi');
-  quizAPI = jest.mock('@/api/textbook/textbookApi');
+  textbookAPI = jest.mock('@/api/textbook/textbookApi');
 })
 
 describe('Quiz Overlay', () => {
