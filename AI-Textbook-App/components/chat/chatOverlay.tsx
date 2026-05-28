@@ -40,7 +40,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastMessageLen, setLastMessageLen] = useState<number>(0);
-  const [scrollLocked, setScrollLocked] = useState<boolean>(true)
+  const [scrollLocked, setScrollLocked] = useState<boolean>(true);
   const [loggedOut, setLoggedOut] = useState<boolean>(false); //debug variable
   const chatRef = useRef(null);
 
@@ -114,7 +114,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   // Opens chat given session id
   const openChat = async (chatId: string, title: string) => {
     try {
-      setScrollLocked(true)
+      setScrollLocked(true);
       setLastMessageLen(1000000);
       setChatOpen(true);
       setChatTitle(title);
@@ -218,7 +218,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       }
 
       setLastMessageLen(0);
-      setScrollLocked(true)
+      setScrollLocked(true);
       setMessages((messages) =>
         messages.map((msg) =>
           msg.id === TEMP_MESSAGE_ID
@@ -241,15 +241,14 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   };
 
   const chatLockTolerance = 10;
-  const onChatEndScroll =  (event: nativeEvent) => {
+  const onChatEndScroll = (event: nativeEvent) => {
     const yOffset = event.contentOffset.y;
     const contentSize = event.contentSize.height;
     const layoutHeight = event.layoutMeasurement.height;
     const delta = contentSize - (yOffset + layoutHeight);
 
-    if(delta < chatLockTolerance)
-      setScrollLocked(true)
-  }
+    if (delta < chatLockTolerance) setScrollLocked(true);
+  };
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -321,11 +320,11 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
             style={styles.chatView}
             contentOffset={{ x: 0, y: scrollOffset }}
             onScrollBeginDrag={() => setScrollLocked(false)}
-            onScrollEndDrag={({nativeEvent}) => onChatEndScroll(nativeEvent)}
-            onMomentumScrollEnd={({nativeEvent}) => onChatEndScroll(nativeEvent)}
+            onScrollEndDrag={({ nativeEvent }) => onChatEndScroll(nativeEvent)}
+            onMomentumScrollEnd={({ nativeEvent }) => onChatEndScroll(nativeEvent)}
             ref={chatRef}
             onContentSizeChange={(_width, height) => {
-              if(scrollLocked){
+              if (scrollLocked) {
                 setScrollOffset(height - chatViewHeight);
               }
             }}>
@@ -358,7 +357,13 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
                         ? styles.assistantTimeStampText
                         : styles.userTimeStampText
                     }>
-                    {message.timestamp.toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric',hour: '2-digit', minute:'2-digit'})}
+                    {message.timestamp.toLocaleString([], {
+                      year: 'numeric',
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </Text>
                 </View>
               );
@@ -369,7 +374,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
               style={styles.chatInput}
               onChangeText={(text) => setChatMessage(text)}
               testID="chatInput"
-              value={chatInputEnabled ? chatMessage : "Awaiting response..."}
+              value={chatInputEnabled ? chatMessage : 'Awaiting response...'}
               editable={chatInputEnabled}
             />
             <TouchableOpacity
