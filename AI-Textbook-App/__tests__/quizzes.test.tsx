@@ -14,6 +14,9 @@ import { fetchQuizzes } from '@/api/quiz/aiQuizApi';
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: 'Ionicons',
+}));
 let quizAPI;
 beforeAll(() => {
   jest.mock('@react-native-async-storage/async-storage');
