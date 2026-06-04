@@ -269,7 +269,9 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
           </View>
 
           <View style={styles.titleBar}>
-            <Text style={styles.title} numberOfLines={1}>{quizTitle}</Text>
+            <Text style={styles.title} numberOfLines={1}>
+              {quizTitle}
+            </Text>
             <TouchableOpacity style={styles.closeButton} onPress={closeQuiz} activeOpacity={0.7}>
               <Ionicons name="close-circle" size={32} color="#8E8E93" />
             </TouchableOpacity>
@@ -300,51 +302,51 @@ export default function AIQuizOverlay({ isVisible, textbookId, chapterId, closeF
           <ScrollView ref={quizScrollRef} showsVerticalScrollIndicator={false}>
             {currentQuiz
               ? currentQuiz.map((question, index) => (
-                <View key={index} style={styles.questionCard}>
-                  <Text testID={'Q' + (index + 1)} style={styles.questionText}>
-                    {index + 1}. {question.question}
-                  </Text>
-                  {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
-                    <View style={styles.resultBadge}>
-                      <Ionicons name="checkmark-circle" size={16} color="#34C759" />
-                      <Text testID={'Q' + (index + 1) + 'T'} style={styles.correctText}>
-                        Correct
-                      </Text>
-                    </View>
-                  ) : showCorrectAnswers ? (
-                    <View style={styles.resultBadge}>
-                      <Ionicons name="close-circle" size={16} color="#FF453A" />
-                      <Text testID={'Q' + (index + 1) + 'F'} style={styles.incorrectText}>
-                        Incorrect
-                      </Text>
-                    </View>
-                  ) : (
-                    []
-                  )}
+                  <View key={index} style={styles.questionCard}>
+                    <Text testID={'Q' + (index + 1)} style={styles.questionText}>
+                      {index + 1}. {question.question}
+                    </Text>
+                    {showCorrectAnswers && currentQuiz[index].answer === quizChoices[index] ? (
+                      <View style={styles.resultBadge}>
+                        <Ionicons name="checkmark-circle" size={16} color="#34C759" />
+                        <Text testID={'Q' + (index + 1) + 'T'} style={styles.correctText}>
+                          Correct
+                        </Text>
+                      </View>
+                    ) : showCorrectAnswers ? (
+                      <View style={styles.resultBadge}>
+                        <Ionicons name="close-circle" size={16} color="#FF453A" />
+                        <Text testID={'Q' + (index + 1) + 'F'} style={styles.incorrectText}>
+                          Incorrect
+                        </Text>
+                      </View>
+                    ) : (
+                      []
+                    )}
 
-                  {question.choices.map((choice, cIndex) => (
-                    <TouchableOpacity
-                      style={[styles.choiceButton, setQuizOptionColor(index, cIndex)]}
-                      key={cIndex}
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        quizChoices[index] = cIndex;
-                        setQuizChoices([...quizChoices]);
-                      }}
-                      disabled={showCorrectAnswers}
-                      testID={'Q' + (index + 1) + 'C' + cIndex}>
-                      <Text style={styles.choiceText}>{choice}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ))
+                    {question.choices.map((choice, cIndex) => (
+                      <TouchableOpacity
+                        style={[styles.choiceButton, setQuizOptionColor(index, cIndex)]}
+                        key={cIndex}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          quizChoices[index] = cIndex;
+                          setQuizChoices([...quizChoices]);
+                        }}
+                        disabled={showCorrectAnswers}
+                        testID={'Q' + (index + 1) + 'C' + cIndex}>
+                        <Text style={styles.choiceText}>{choice}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ))
               : []}
 
             <TouchableOpacity
               style={[
                 styles.actionButton,
                 (quizChoices.filter((val) => val === -1).length > 0 || showCorrectAnswers) &&
-                styles.actionButtonDisabled,
+                  styles.actionButtonDisabled,
               ]}
               activeOpacity={0.8}
               onPress={submitQuiz}

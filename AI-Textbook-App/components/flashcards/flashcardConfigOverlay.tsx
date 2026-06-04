@@ -167,7 +167,12 @@ export default function FlashcardConfigOverlay({
             <>
               {error ? (
                 <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Ionicons
+                    name="alert-circle"
+                    size={20}
+                    color="#FFFFFF"
+                    style={{ marginRight: 8 }}
+                  />
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
@@ -184,10 +189,11 @@ export default function FlashcardConfigOverlay({
                     activeOpacity={0.7}
                     onPress={() => setSelectedSubChapter(subChapter.title)}>
                     <View style={styles.optionRow}>
-                      <View style={[
-                        styles.radioOuter,
-                        selectedSubChapter === subChapter.title && styles.radioOuterSelected,
-                      ]}>
+                      <View
+                        style={[
+                          styles.radioOuter,
+                          selectedSubChapter === subChapter.title && styles.radioOuterSelected,
+                        ]}>
                         {selectedSubChapter === subChapter.title && (
                           <View style={styles.radioInner} />
                         )}

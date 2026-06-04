@@ -69,7 +69,11 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
 
         <View style={styles.navigationContainer}>
           <TouchableOpacity
-            style={[styles.navButton, styles.navButtonSecondary, currentIndex === 0 && styles.navButtonDisabled]}
+            style={[
+              styles.navButton,
+              styles.navButtonSecondary,
+              currentIndex === 0 && styles.navButtonDisabled,
+            ]}
             activeOpacity={0.7}
             onPress={() => {
               if (currentIndex > 0) {
@@ -78,8 +82,15 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               }
             }}
             disabled={currentIndex === 0}>
-            <Ionicons name="chevron-back" size={18} color={currentIndex === 0 ? '#48484A' : '#FFFFFF'} />
-            <Text style={[styles.navButtonText, currentIndex === 0 && styles.navButtonTextDisabled]}>Previous</Text>
+            <Ionicons
+              name="chevron-back"
+              size={18}
+              color={currentIndex === 0 ? '#48484A' : '#FFFFFF'}
+            />
+            <Text
+              style={[styles.navButtonText, currentIndex === 0 && styles.navButtonTextDisabled]}>
+              Previous
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -96,14 +107,29 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               }
             }}
             disabled={currentIndex === flashcards.length - 1}>
-            <Text style={[styles.navButtonText, currentIndex === flashcards.length - 1 && styles.navButtonTextDisabled]}>Next</Text>
-            <Ionicons name="chevron-forward" size={18} color={currentIndex === flashcards.length - 1 ? '#48484A' : '#FFFFFF'} />
+            <Text
+              style={[
+                styles.navButtonText,
+                currentIndex === flashcards.length - 1 && styles.navButtonTextDisabled,
+              ]}>
+              Next
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={currentIndex === flashcards.length - 1 ? '#48484A' : '#FFFFFF'}
+            />
           </TouchableOpacity>
         </View>
 
         <View style={styles.scoreContainer}>
           <View style={styles.scoreItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={{ marginBottom: 4 }} />
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color="#34C759"
+              style={{ marginBottom: 4 }}
+            />
             <Text style={styles.scoreNumberCorrect}>{correctCount}</Text>
             <Text style={styles.scoreLabel}>Correct</Text>
           </View>
@@ -167,12 +193,20 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
               {Math.round((correctCount / flashcards.length) * 100)}%
             </Text>
             <View style={styles.completionButtons}>
-              <TouchableOpacity style={styles.restartButton} activeOpacity={0.8} onPress={handleRestart}>
+              <TouchableOpacity
+                style={styles.restartButton}
+                activeOpacity={0.8}
+                onPress={handleRestart}>
                 <Ionicons name="refresh" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.restartButtonText}>Study Again</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.doneButton} activeOpacity={0.8} onPress={closeFunc}>
-                <Ionicons name="checkmark-done" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Ionicons
+                  name="checkmark-done"
+                  size={18}
+                  color="#FFFFFF"
+                  style={{ marginRight: 6 }}
+                />
                 <Text style={styles.doneButtonText}>Done</Text>
               </TouchableOpacity>
             </View>
