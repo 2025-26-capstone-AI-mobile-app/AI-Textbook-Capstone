@@ -15,7 +15,13 @@ type Props = {
   initialFeature?: number;
 };
 
-export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeFunc, initialFeature }: Props) {
+export default function AIFeatureMenu({
+  isVisible,
+  textbookId,
+  chapterId,
+  closeFunc,
+  initialFeature,
+}: Props) {
   //feature list
   const FEATURE_NONE = 0;
   const FEATURE_CHAT = 1;
@@ -32,7 +38,7 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
       setFeatureSelected(FEATURE_NONE);
     }
   }, [isVisible, initialFeature]);
-  
+
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });

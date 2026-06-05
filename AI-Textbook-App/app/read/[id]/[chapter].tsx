@@ -153,7 +153,8 @@ function ChapterContent({
           textbookId={id}
           chapterId={chapter}
           closeFunc={() => {
-            setAiOverlayVisible(false); setSelectedFeature(0);
+            setAiOverlayVisible(false);
+            setSelectedFeature(0);
           }}
         />
 
