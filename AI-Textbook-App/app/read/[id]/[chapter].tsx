@@ -76,6 +76,7 @@ function ChapterContent({
   const [idleModalVisible, setIdleModalVisible] = useState(false);
   const { idleTime, isIdle, resetIdle } = useScrollIdleTime(4000);
   const [stopAskingEnabled, setStopAskingEnabled] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(0);
 
   // Existing effect — fetches PDF
   useEffect(() => {
@@ -133,12 +134,13 @@ function ChapterContent({
           />
         </View>
 
-        <View style={styles.idleOverlay}>
+        {/* Commented out code below shows idle time tracker on screen, used for testing. */}
+        {/* <View style={styles.idleOverlay}>
           <Text style={{ color: 'white' }}>Idle time: {(idleTime / 1000).toFixed(1)}s</Text>
           <Text style={{ color: isIdle ? 'red' : 'green' }}>
             {isIdle ? 'User idle' : 'User active'}
           </Text>
-        </View>
+        </View> */}
 
         <TouchableOpacity style={styles.aiButton} onPress={() => setAiOverlayVisible(true)}>
           <AntDesign name="up" size={24} color="white" />
@@ -147,9 +149,12 @@ function ChapterContent({
 
         <AIFeatureMenu
           isVisible={aiOverlayVisible}
+          initialFeature={selectedFeature}
           textbookId={id}
           chapterId={chapter}
-          closeFunc={() => setAiOverlayVisible(false)}
+          closeFunc={() => {
+            setAiOverlayVisible(false); setSelectedFeature(0);
+          }}
         />
 
         {/* Idle Modal */}
@@ -174,6 +179,7 @@ function ChapterContent({
                 style={styles.modalOption}
                 onPress={() => {
                   setIdleModalVisible(false);
+                  setSelectedFeature(1);
                   setAiOverlayVisible(true);
                 }}>
                 <Text style={styles.modalOptionTitle}>Ask the AI</Text>
@@ -184,6 +190,7 @@ function ChapterContent({
                 style={styles.modalOption}
                 onPress={() => {
                   setIdleModalVisible(false);
+                  setSelectedFeature(2);
                   setAiOverlayVisible(true);
                   // navigate to flashcards
                 }}>
@@ -195,6 +202,7 @@ function ChapterContent({
                 style={styles.modalOption}
                 onPress={() => {
                   setIdleModalVisible(false);
+                  setSelectedFeature(3);
                   setAiOverlayVisible(true);
                   // navigate to quiz
                 }}>

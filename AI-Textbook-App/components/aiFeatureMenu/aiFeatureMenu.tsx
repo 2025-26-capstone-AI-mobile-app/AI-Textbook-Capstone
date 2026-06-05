@@ -11,9 +11,10 @@ type Props = {
   textbookId: string;
   chapterId: string;
   closeFunc: () => void;
+  initialFeature?: number;
 };
 
-export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeFunc }: Props) {
+export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeFunc, initialFeature }: Props) {
   //feature list
   const FEATURE_NONE = 0;
   const FEATURE_CHAT = 1;
@@ -23,6 +24,14 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   const [, setToken] = useState<string>('');
   const [featureSelected, setFeatureSelected] = useState<number>(FEATURE_NONE);
 
+  useEffect(() => {
+    if (isVisible && initialFeature !== undefined) {
+      setFeatureSelected(initialFeature);
+    } else if (!isVisible) {
+      setFeatureSelected(FEATURE_NONE);
+    }
+  }, [isVisible, initialFeature]);
+  
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
   });
