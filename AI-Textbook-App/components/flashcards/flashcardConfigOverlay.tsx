@@ -1,17 +1,15 @@
-// components/flashcards/flashcardConfigOverlay.tsx
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Button,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import Modal from 'react-native-modal';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchTextbookContent } from '@/api/textbook/textbookApi';
 import { generateFlashcards } from '@/api/flashcards/aiFlashcardApi';
 import FlashcardStudyOverlay from './flashcardStudyOverlay';
@@ -59,7 +57,6 @@ export default function FlashcardConfigOverlay({
         return;
       }
 
-      // Find the current chapter
       const currentChapter = textbookData.chapters.find(
         (ch: any) => ch.id.toString() === chapterId,
       );
@@ -69,7 +66,6 @@ export default function FlashcardConfigOverlay({
         return;
       }
 
-      // Set subchapters or use whole chapter option
       if (currentChapter.sub_chapters && currentChapter.sub_chapters.length > 0) {
         setSubChapters([
           { title: 'Entire Chapter', pageOffset: undefined },
@@ -101,7 +97,6 @@ export default function FlashcardConfigOverlay({
     setLoading(true);
     setError('');
 
-    // console.log(""selected?.pageOffset)
     try {
       const selected = subChapters.find((s) => s.title === selectedSubChapter);
       const response = await generateFlashcards(
@@ -149,34 +144,41 @@ export default function FlashcardConfigOverlay({
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
-        {/* Title and close button */}
-        <View style={styles.titleBar}>
-          <Text style={styles.title}>Generate Flashcards</Text>
-          <View style={styles.closeButton}>
-            <Button title="X" onPress={closeFunc} color="black" />
-          </View>
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
         </View>
 
-        <ScrollView style={styles.scrollContent}>
+        <View style={styles.titleBar}>
+          <Text style={styles.title}>Generate Flashcards</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeFunc} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={32} color="#8E8E93" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {loading && !showStudyView ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#ffffff" />
+              <ActivityIndicator size="large" color="#007AFF" />
               <Text style={styles.loadingText}>
                 {subChapters.length === 0 ? 'Loading sections...' : 'Generating flashcards...'}
               </Text>
             </View>
           ) : (
             <>
-              {/* Error message */}
               {error ? (
                 <View style={styles.errorContainer}>
+                  <Ionicons
+                    name="alert-circle"
+                    size={20}
+                    color="#FFFFFF"
+                    style={{ marginRight: 8 }}
+                  />
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
 
-              {/* Section selection */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Select Section:</Text>
+                <Text style={styles.sectionTitle}>Select Section</Text>
                 {subChapters.map((subChapter, index) => (
                   <TouchableOpacity
                     key={index}
@@ -184,21 +186,32 @@ export default function FlashcardConfigOverlay({
                       styles.optionButton,
                       selectedSubChapter === subChapter.title && styles.optionButtonSelected,
                     ]}
+                    activeOpacity={0.7}
                     onPress={() => setSelectedSubChapter(subChapter.title)}>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        selectedSubChapter === subChapter.title && styles.optionTextSelected,
-                      ]}>
-                      {subChapter.title}
-                    </Text>
+                    <View style={styles.optionRow}>
+                      <View
+                        style={[
+                          styles.radioOuter,
+                          selectedSubChapter === subChapter.title && styles.radioOuterSelected,
+                        ]}>
+                        {selectedSubChapter === subChapter.title && (
+                          <View style={styles.radioInner} />
+                        )}
+                      </View>
+                      <Text
+                        style={[
+                          styles.optionText,
+                          selectedSubChapter === subChapter.title && styles.optionTextSelected,
+                        ]}>
+                        {subChapter.title}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              {/* Card count selection */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Number of Cards:</Text>
+                <Text style={styles.sectionTitle}>Number of Cards</Text>
                 <View style={styles.cardCountContainer}>
                   {cardCountOptions.map((count) => (
                     <TouchableOpacity
@@ -207,6 +220,7 @@ export default function FlashcardConfigOverlay({
                         styles.cardCountButton,
                         cardCount === count && styles.cardCountButtonSelected,
                       ]}
+                      activeOpacity={0.7}
                       onPress={() => setCardCount(count)}>
                       <Text
                         style={[
@@ -220,18 +234,17 @@ export default function FlashcardConfigOverlay({
                 </View>
               </View>
 
-              {/* Generate button */}
-              <View style={styles.generateButtonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.generateButton,
-                    !selectedSubChapter && styles.generateButtonDisabled,
-                  ]}
-                  onPress={handleGenerateFlashcards}
-                  disabled={!selectedSubChapter || loading}>
-                  <Text style={styles.generateButtonText}>Generate Flashcards</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={[
+                  styles.generateButton,
+                  !selectedSubChapter && styles.generateButtonDisabled,
+                ]}
+                activeOpacity={0.8}
+                onPress={handleGenerateFlashcards}
+                disabled={!selectedSubChapter || loading}>
+                <Ionicons name="sparkles" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.generateButtonText}>Generate Flashcards</Text>
+              </TouchableOpacity>
             </>
           )}
         </ScrollView>
@@ -246,128 +259,166 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '75%',
+    height: '100%',
     width: '100%',
-    backgroundColor: '#383737ff',
+    backgroundColor: '#1C1C1E',
     marginTop: 'auto',
-    padding: 20,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  title: {
-    flex: 1,
-    fontSize: 30,
-    color: 'white',
-    fontWeight: 'bold',
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3A3A3C',
   },
   titleBar: {
     flexDirection: 'row',
-    borderBottomColor: 'white',
-    paddingBottom: 10,
-    borderBottomWidth: 2,
-    marginBottom: 20,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   closeButton: {
-    borderRadius: 20,
-    backgroundColor: '#ffffff68',
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignContent: 'center',
+    padding: 4,
   },
   scrollContent: {
     flex: 1,
+    marginTop: 8,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 60,
+    gap: 16,
   },
   loadingText: {
-    color: 'white',
+    color: '#8E8E93',
     fontSize: 16,
-    marginTop: 10,
   },
   errorContainer: {
-    backgroundColor: '#ff4444',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 68, 68, 0.3)',
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   errorText: {
-    color: 'white',
-    fontSize: 16,
-    textAlign: 'center',
+    color: '#FF6B6B',
+    fontSize: 15,
+    flex: 1,
   },
   section: {
-    marginBottom: 30,
+    marginBottom: 28,
   },
   sectionTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 14,
   },
   optionButton: {
-    backgroundColor: '#2a2a2aff',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#2a2a2aff',
+    backgroundColor: '#2C2C2E',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: '#2C2C2E',
   },
   optionButtonSelected: {
-    backgroundColor: '#4a4a4aff',
-    borderColor: '#ffffff',
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
+    borderColor: '#007AFF',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#48484A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  radioOuterSelected: {
+    borderColor: '#007AFF',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#007AFF',
   },
   optionText: {
-    color: '#a0a0a0',
+    color: '#8E8E93',
     fontSize: 16,
+    flex: 1,
   },
   optionTextSelected: {
-    color: '#ffffff',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   cardCountContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    gap: 10,
   },
   cardCountButton: {
-    backgroundColor: '#2a2a2aff',
-    padding: 15,
-    borderRadius: 10,
-    minWidth: 60,
+    flex: 1,
+    backgroundColor: '#2C2C2E',
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#2a2a2aff',
+    borderWidth: 1.5,
+    borderColor: '#2C2C2E',
   },
   cardCountButtonSelected: {
-    backgroundColor: '#4a4a4aff',
-    borderColor: '#ffffff',
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
+    borderColor: '#007AFF',
   },
   cardCountText: {
-    color: '#a0a0a0',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#8E8E93',
+    fontSize: 17,
+    fontWeight: '600',
   },
   cardCountTextSelected: {
-    color: '#ffffff',
-  },
-  generateButtonContainer: {
-    marginTop: 20,
+    color: '#FFFFFF',
   },
   generateButton: {
     backgroundColor: '#007AFF',
-    padding: 18,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 4,
   },
   generateButtonDisabled: {
-    backgroundColor: '#555555',
+    backgroundColor: '#2C2C2E',
   },
   generateButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
   },
 });

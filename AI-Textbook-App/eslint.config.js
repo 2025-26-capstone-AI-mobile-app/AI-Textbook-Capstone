@@ -8,18 +8,17 @@ module.exports = defineConfig([
   eslintPluginPrettierRecommended,
   {
     ignores: ['dist/*'],
-    rules:{
-      "prettier/prettier": [
-        "error",
+    rules: {
+      'prettier/prettier': [
+        'error',
         {
-          "printWidth": 100,
-          "tabWidth": 2,
-          "singleQuote": true,
-          "bracketSameLine": true,
-          "endOfLine": "auto"
-        }
-      ]
-    } 
+          printWidth: 100,
+          tabWidth: 2,
+          singleQuote: true,
+          bracketSameLine: true,
+          endOfLine: 'auto',
+        },
+      ],
+    },
   },
-  
 ]);
