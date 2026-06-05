@@ -14,6 +14,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
   const [isFlipped, setIsFlipped] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
+  const [answers, setAnswers] = useState(Array(flashcards.length).fill(-1));
 
   const currentCard = flashcards[currentIndex];
   const progress = ((currentIndex + 1) / flashcards.length) * 100;
@@ -25,14 +26,20 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
   const handleNext = (wasCorrect: boolean) => {
     if (wasCorrect) {
       setCorrectCount(correctCount + 1);
+      setAnswers(() => {
+        answers[currentIndex] = 1;
+        return answers;
+      });
     } else {
       setIncorrectCount(incorrectCount + 1);
+      setAnswers(() => {
+        answers[currentIndex] = 0;
+        return answers;
+      });
     }
 
     setIsFlipped(false);
-    if (currentIndex < flashcards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
+    setCurrentIndex(currentIndex + 1);
   };
 
   const handleRestart = () => {
@@ -40,9 +47,10 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
     setIsFlipped(false);
     setCorrectCount(0);
     setIncorrectCount(0);
+    setAnswers(Array(flashcards.length).fill(-1));
   };
 
-  const isComplete = correctCount + incorrectCount === flashcards.length;
+  const isComplete = currentIndex >= flashcards.length;
 
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
@@ -63,7 +71,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <Text style={styles.progressText}>
-            {currentIndex + 1} / {flashcards.length}
+            {Math.min(currentIndex + 1, flashcards.length)} / {flashcards.length}
           </Text>
         </View>
 
@@ -97,27 +105,27 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
             style={[
               styles.navButton,
               styles.navButtonPrimary,
-              currentIndex === flashcards.length - 1 && styles.navButtonDisabled,
+              currentIndex >= flashcards.length && styles.navButtonDisabled,
             ]}
             activeOpacity={0.7}
             onPress={() => {
-              if (currentIndex < flashcards.length - 1) {
+              if (currentIndex < flashcards.length) {
                 setCurrentIndex(currentIndex + 1);
                 setIsFlipped(false);
               }
             }}
-            disabled={currentIndex === flashcards.length - 1}>
+            disabled={currentIndex === flashcards.length}>
             <Text
               style={[
                 styles.navButtonText,
-                currentIndex === flashcards.length - 1 && styles.navButtonTextDisabled,
+                currentIndex >= flashcards.length && styles.navButtonTextDisabled,
               ]}>
-              Next
+              {currentIndex >= flashcards.length - 1 ? 'Finish' : 'Next'}
             </Text>
             <Ionicons
               name="chevron-forward"
               size={18}
-              color={currentIndex === flashcards.length - 1 ? '#48484A' : '#FFFFFF'}
+              color={currentIndex >= flashcards.length ? '#48484A' : '#FFFFFF'}
             />
           </TouchableOpacity>
         </View>
@@ -144,21 +152,29 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
         {!isComplete ? (
           <View style={styles.cardAndAnswerContainer}>
             <View style={styles.cardContainer}>
-              <View style={[styles.card, isFlipped && styles.cardFlipped]}>
+              <TouchableOpacity
+                onPress={handleFlip}
+                activeOpacity={0.9}
+                style={[
+                  styles.card,
+                  isFlipped && answers[currentIndex] != -1 && styles.cardFlipped,
+                  answers[currentIndex] == 1 && styles.cardFlippedCorrect,
+                  answers[currentIndex] == 0 && styles.cardFlippedWrong,
+                ]}>
                 <ScrollView
                   contentContainerStyle={styles.cardContent}
                   showsVerticalScrollIndicator={true}>
-                  <TouchableOpacity onPress={handleFlip} activeOpacity={0.9}>
+                  <View>
                     <Text style={styles.cardLabel}>{isFlipped ? 'Answer' : 'Question'}</Text>
                     <Text style={styles.cardText}>
                       {isFlipped ? currentCard.answer : currentCard.question}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 </ScrollView>
-              </View>
+              </TouchableOpacity>
             </View>
 
-            {isFlipped && (
+            {isFlipped && answers[currentIndex] === -1 && (
               <View style={styles.answerSection}>
                 <Text style={styles.answerPrompt}>Did you get it right?</Text>
                 <View style={styles.buttonContainer}>
@@ -223,7 +239,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   overlayContent: {
-    height: '92%',
+    height: '100%',
     width: '100%',
     backgroundColor: '#1C1C1E',
     marginTop: 'auto',
@@ -364,6 +380,12 @@ const styles = StyleSheet.create({
   },
   cardFlipped: {
     borderColor: '#007AFF',
+  },
+  cardFlippedWrong: {
+    borderColor: 'green',
+  },
+  cardFlippedCorrect: {
+    borderColor: 'red',
   },
   cardContent: {
     paddingVertical: 16,
