@@ -74,7 +74,7 @@ function ChapterContent({
   const [pdfUrl, setPdfUrl] = useState('');
   const [aiOverlayVisible, setAiOverlayVisible] = useState(false);
   const [idleModalVisible, setIdleModalVisible] = useState(false);
-  const { idleTime, isIdle, resetIdle } = useScrollIdleTime(4000);
+  const { idleTime, isIdle, resetIdle } = useScrollIdleTime(600000);
   const [stopAskingEnabled, setStopAskingEnabled] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(0);
 
