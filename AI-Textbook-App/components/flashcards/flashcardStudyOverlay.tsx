@@ -26,10 +26,16 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
   const handleNext = (wasCorrect: boolean) => {
     if (wasCorrect) {
       setCorrectCount(correctCount + 1);
-      setAnswers(() => {answers[currentIndex] = 1; return answers})
+      setAnswers(() => {
+        answers[currentIndex] = 1;
+        return answers;
+      });
     } else {
       setIncorrectCount(incorrectCount + 1);
-      setAnswers(() => {answers[currentIndex] = 0; return answers})
+      setAnswers(() => {
+        answers[currentIndex] = 0;
+        return answers;
+      });
     }
 
     setIsFlipped(false);
@@ -41,7 +47,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
     setIsFlipped(false);
     setCorrectCount(0);
     setIncorrectCount(0);
-    setAnswers(Array(flashcards.length).fill(-1))
+    setAnswers(Array(flashcards.length).fill(-1));
   };
 
   const isComplete = currentIndex >= flashcards.length;
@@ -65,7 +71,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
           <Text style={styles.progressText}>
-            {Math.min(currentIndex + 1, flashcards.length) } / {flashcards.length}
+            {Math.min(currentIndex + 1, flashcards.length)} / {flashcards.length}
           </Text>
         </View>
 
@@ -103,7 +109,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
             ]}
             activeOpacity={0.7}
             onPress={() => {
-              if (currentIndex < flashcards.length ) {
+              if (currentIndex < flashcards.length) {
                 setCurrentIndex(currentIndex + 1);
                 setIsFlipped(false);
               }
@@ -114,7 +120,7 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
                 styles.navButtonText,
                 currentIndex >= flashcards.length && styles.navButtonTextDisabled,
               ]}>
-              {currentIndex >= flashcards.length - 1 ? "Finish": "Next"}
+              {currentIndex >= flashcards.length - 1 ? 'Finish' : 'Next'}
             </Text>
             <Ionicons
               name="chevron-forward"
@@ -146,10 +152,15 @@ export default function FlashcardStudyOverlay({ isVisible, flashcards, closeFunc
         {!isComplete ? (
           <View style={styles.cardAndAnswerContainer}>
             <View style={styles.cardContainer}>
-              <TouchableOpacity 
-                onPress={handleFlip} 
-                activeOpacity={0.9} 
-                style={[styles.card, isFlipped && answers[currentIndex] != -1 && styles.cardFlipped, answers[currentIndex] == 1 && styles.cardFlippedCorrect, answers[currentIndex] == 0 && styles.cardFlippedWrong]}>
+              <TouchableOpacity
+                onPress={handleFlip}
+                activeOpacity={0.9}
+                style={[
+                  styles.card,
+                  isFlipped && answers[currentIndex] != -1 && styles.cardFlipped,
+                  answers[currentIndex] == 1 && styles.cardFlippedCorrect,
+                  answers[currentIndex] == 0 && styles.cardFlippedWrong,
+                ]}>
                 <ScrollView
                   contentContainerStyle={styles.cardContent}
                   showsVerticalScrollIndicator={true}>

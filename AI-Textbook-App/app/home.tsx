@@ -149,12 +149,12 @@ export default function HomeScreen() {
           />
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.testButton}
           activeOpacity={0.7}
           onPress={() => router.navigate('/')}>
           <Text style={styles.testButtonText}>Test persistence</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.logoutButton} activeOpacity={0.8} onPress={logout}>
           <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={styles.logoutIcon} />
