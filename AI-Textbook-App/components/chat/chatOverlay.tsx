@@ -7,7 +7,6 @@ import {
   Text,
   StyleSheet,
   Alert,
-  Button,
   TouchableOpacity,
   ScrollView,
   TextInput,
@@ -38,7 +37,7 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatInputEnabled, setChatInputEnabled] = useState<boolean>(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const chatRef = useRef(null);
+  const chatRef = useRef<any>(null);
 
   useEffect(() => {
     AsyncStorage.getItem('access_token').then((t) => setToken(t ?? ''));
@@ -209,34 +208,44 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
-        {/* Title and close button */}
-        <View style={styles.titleBar}>
-          <Text style={styles.title}>Chats</Text>
-          <View style={styles.closeButton}>
-            <Button title="X" onPress={closeFunc} color="black"></Button>
-          </View>
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
         </View>
 
-        <ScrollView>
-          {/* Create new chat button */}
-          <TouchableOpacity
-            style={{ ...styles.chatSelector, ...styles.newChatButton }}
-            onPress={openNewChat}>
-            <Text style={styles.chatSelectorText}>Start new chat</Text>
+        <View style={styles.titleBar}>
+          <Text style={styles.title}>Chats</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeFunc} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={32} color="#8E8E93" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={styles.chatListScroll} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity style={styles.newChatRow} activeOpacity={0.6} onPress={openNewChat}>
+            <View style={styles.newChatIconContainer}>
+              <Ionicons name="add" size={22} color="#007AFF" />
+            </View>
+            <Text style={styles.newChatText}>Start new chat</Text>
+            <Ionicons name="chevron-forward" size={20} color="#48484A" />
           </TouchableOpacity>
 
-          {/* Show previous chats */}
           {chats
             ? chats.map((session) => {
                 return (
                   <TouchableOpacity
                     key={session.session_id}
-                    style={styles.chatSelector}
+                    style={styles.chatRow}
+                    activeOpacity={0.6}
                     onPress={() => openChat(session.session_id, session.title)}>
-                    <Text style={styles.chatSelectorText}>{session.title}</Text>
-                    <Text style={styles.chatSelectorSubText}>
-                      {new Date(session.updated_at).toLocaleDateString()}
-                    </Text>
+                    <View style={styles.chatRowIconContainer}>
+                      <Ionicons name="chatbubble" size={18} color="#8E8E93" />
+                    </View>
+                    <View style={styles.chatRowTextContainer}>
+                      <Text style={styles.chatRowTitle}>{session.title}</Text>
+                      <Text style={styles.chatRowDate}>
+                        {new Date(session.updated_at).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#48484A" />
                   </TouchableOpacity>
                 );
               })
@@ -247,28 +256,31 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
       {/* Chat window */}
       <Modal coverScreen={false} hasBackdrop={false} isVisible={chatOpen} style={styles.modal}>
         <View style={styles.overlayContent}>
-          {/* Title and close button */}
+          <View style={styles.dragHandleContainer}>
+            <View style={styles.dragHandle} />
+          </View>
+
           <View style={styles.titleBar}>
-            <Text style={styles.title}>
+            <Text style={styles.title} numberOfLines={1}>
               {chatTitle.length < 30 ? chatTitle : chatTitle.substring(0, 30) + '...'}
             </Text>
-            <View style={styles.closeButton}>
-              {/* 
-                                Button is disabled while waiting for Ai response because closing the
-                                chat before the response comes back causes issues. Not a great solution,
-                                but it works.
-                             */}
-              <Button
-                title="X"
-                onPress={closeChat}
-                color="black"
-                disabled={!chatInputEnabled}></Button>
-            </View>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={closeChat}
+              activeOpacity={0.7}
+              disabled={!chatInputEnabled}>
+              <Ionicons
+                name="close-circle"
+                size={32}
+                color={chatInputEnabled ? '#8E8E93' : '#3A3A3C'}
+              />
+            </TouchableOpacity>
           </View>
           <ScrollView
             style={styles.chatView}
             contentOffset={{ x: 0, y: scrollOffset }}
             ref={chatRef}
+            showsVerticalScrollIndicator={false}
             onContentSizeChange={(_width, height) => {
               setScrollOffset(height - chatViewHeight);
             }}>
@@ -310,12 +322,17 @@ export default function AIChatOverlay({ isVisible, textbookId, chapterId, closeF
               onChangeText={(text) => setChatMessage(text)}
               value={chatMessage}
               editable={chatInputEnabled}
+              placeholder="Type a message..."
+              placeholderTextColor="#48484A"
             />
             <TouchableOpacity
               style={styles.chatSendButton}
               onPress={sendMessage}
+              activeOpacity={0.7}
               disabled={!chatInputEnabled}>
-              <Ionicons name="send" size={24} color="white" />
+              <View style={styles.sendIconContainer}>
+                <Ionicons name="send" size={18} color="#FFFFFF" />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -332,109 +349,172 @@ const styles = StyleSheet.create({
   overlayContent: {
     height: '100%',
     width: '100%',
-    backgroundColor: '#383737ff',
+    backgroundColor: '#1C1C1E',
     marginTop: 'auto',
-    padding: 20,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  title: {
-    flex: 1,
-    fontSize: 30,
-    color: 'white',
-    fontWeight: 'bold',
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3A3A3C',
   },
   titleBar: {
     flexDirection: 'row',
-    borderBottomColor: 'white',
-    paddingBottom: 10,
-    borderBottomWidth: 2,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   closeButton: {
-    borderRadius: 20,
-    backgroundColor: '#ffffff68',
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignContent: 'center',
-    color: 'white',
+    padding: 4,
   },
-  newChatButton: {
-    paddingTop: 15,
-    paddingBottom: 15,
+  chatListScroll: {
+    flex: 1,
+    marginTop: 8,
   },
-  chatSelector: {
+  newChatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'white',
+    borderBottomColor: '#2C2C2E',
+  },
+  newChatIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 5,
-    paddingBottom: 5,
+    marginRight: 14,
   },
-  chatSelectorText: {
-    color: 'white',
-    fontSize: 20,
+  newChatText: {
+    flex: 1,
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
-  chatSelectorSubText: {
-    color: 'grey',
-    fontSize: 15,
+  chatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  chatRowIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#2C2C2E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  chatRowTextContainer: {
+    flex: 1,
+  },
+  chatRowTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  chatRowDate: {
+    color: '#8E8E93',
+    fontSize: 13,
+    marginTop: 2,
   },
   chatView: {
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-    borderWidth: 1,
-    borderColor: 'white',
+    flex: 1,
+    marginTop: 8,
+    marginBottom: 8,
   },
   chatInput: {
     flex: 1,
     backgroundColor: '#2C2C2E',
-    borderRadius: 10,
-    height: 50,
-    paddingHorizontal: 16,
+    borderRadius: 20,
+    height: 44,
+    paddingHorizontal: 18,
     color: '#FFFFFF',
     fontSize: 16,
   },
   chatSendButton: {
     justifyContent: 'center',
-    alignContent: 'center',
-    height: 50,
-    width: 50,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  sendIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputContainer: {
     width: '100%',
     flexDirection: 'row',
-    marginBottom: 30,
+    alignItems: 'center',
+    paddingBottom: 16,
   },
   assistantMessage: {
     maxWidth: '80%',
-    backgroundColor: '#ffffff68',
-    margin: 10,
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#2C2C2E',
+    marginTop: 6,
+    marginBottom: 2,
+    marginHorizontal: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderTopLeftRadius: 4,
   },
   userMessage: {
     maxWidth: '80%',
-    backgroundColor: '#00c8ff68',
-    margin: 10,
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#007AFF',
+    marginTop: 6,
+    marginBottom: 2,
+    marginHorizontal: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderTopRightRadius: 4,
     marginLeft: 'auto',
   },
   userMessageText: {
-    fontSize: 17,
+    fontSize: 16,
+    color: '#FFFFFF',
   },
   assistantMessageText: {
-    fontSize: 17,
+    fontSize: 16,
+    color: '#FFFFFF',
     textAlign: 'left',
   },
   userTimeStampText: {
     textAlign: 'right',
-    paddingRight: 10,
-    paddingBottom: 10,
-    color: 'white',
+    paddingRight: 8,
+    paddingBottom: 6,
+    color: '#8E8E93',
+    fontSize: 11,
   },
   assistantTimeStampText: {
     textAlign: 'left',
-    paddingLeft: 10,
-    paddingBottom: 10,
-    color: 'white',
+    paddingLeft: 8,
+    paddingBottom: 6,
+    color: '#8E8E93',
+    fontSize: 11,
   },
 });

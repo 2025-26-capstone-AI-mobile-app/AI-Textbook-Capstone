@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Modal from 'react-native-modal';
+import { Ionicons } from '@expo/vector-icons';
 import AIChatOverlay from '../chat/chatOverlay';
 import FlashcardConfigOverlay from '../flashcards/flashcardConfigOverlay';
 import AIQuizOverlay from '../quiz/quizOverlay';
@@ -42,29 +43,55 @@ export default function AIFeatureMenu({ isVisible, textbookId, chapterId, closeF
   return (
     <Modal coverScreen={false} hasBackdrop={false} isVisible={isVisible} style={styles.modal}>
       <View style={styles.overlayContent}>
-        {/* Title and close button */}
-        <View style={styles.titleBar}>
-          <Text style={styles.title}>AI Features</Text>
-          <View style={styles.closeButton}>
-            <Button title="X" onPress={closeFunc} color="black"></Button>
-          </View>
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
         </View>
 
-        <ScrollView>
-          {/* Feature selectors */}
+        <View style={styles.titleBar}>
+          <Text style={styles.title}>AI Features</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={closeFunc} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={32} color="#8E8E93" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
           <TouchableOpacity
-            style={styles.featureSelector}
+            style={styles.featureRow}
+            activeOpacity={0.6}
             onPress={() => setFeatureSelected(FEATURE_CHAT)}>
-            <Text style={styles.featureSelectorText}>AI Chat</Text>
+            <View style={styles.featureIconContainer}>
+              <Ionicons name="chatbubbles" size={22} color="#007AFF" />
+            </View>
+            <View style={styles.featureTextContainer}>
+              <Text style={styles.featureTitle}>AI Chat</Text>
+              <Text style={styles.featureSubtitle}>Ask questions about this chapter</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#48484A" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featureSelector} onPress={openFlashcards}>
-            <Text style={styles.featureSelectorText}>AI Flashcards</Text>
-            <Text style={styles.featureSelectorSubText}>Generate study flashcards</Text>
+
+          <TouchableOpacity style={styles.featureRow} activeOpacity={0.6} onPress={openFlashcards}>
+            <View style={styles.featureIconContainer}>
+              <Ionicons name="albums" size={22} color="#007AFF" />
+            </View>
+            <View style={styles.featureTextContainer}>
+              <Text style={styles.featureTitle}>AI Flashcards</Text>
+              <Text style={styles.featureSubtitle}>Generate study flashcards</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#48484A" />
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={styles.featureSelector}
+            style={[styles.featureRow, { borderBottomWidth: 0 }]}
+            activeOpacity={0.6}
             onPress={() => setFeatureSelected(FEATURE_QUIZ)}>
-            <Text style={styles.featureSelectorText}>Quiz</Text>
+            <View style={styles.featureIconContainer}>
+              <Ionicons name="checkmark-circle" size={22} color="#007AFF" />
+            </View>
+            <View style={styles.featureTextContainer}>
+              <Text style={styles.featureTitle}>Quiz</Text>
+              <Text style={styles.featureSubtitle}>Test your knowledge</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#48484A" />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -99,46 +126,71 @@ const styles = StyleSheet.create({
   overlayContent: {
     height: '100%',
     width: '100%',
-    backgroundColor: '#383737ff',
+    backgroundColor: '#1C1C1E',
     marginTop: 'auto',
-    padding: 20,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  title: {
-    flex: 1,
-    fontSize: 30,
-    color: 'white',
-    fontWeight: 'bold',
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#3A3A3C',
   },
   titleBar: {
     flexDirection: 'row',
-    borderBottomColor: 'white',
-    paddingBottom: 10,
-    borderBottomWidth: 2,
+    alignItems: 'center',
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C2C2E',
+  },
+  title: {
+    flex: 1,
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   closeButton: {
-    borderRadius: 20,
-    backgroundColor: '#ffffff68',
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignContent: 'center',
-    color: 'white',
+    padding: 4,
   },
-  featureSelector: {
+  menuList: {
+    flex: 1,
+    marginTop: 8,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'white',
+    borderBottomColor: '#2C2C2E',
+  },
+  featureIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 122, 255, 0.12)',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 15,
-    paddingBottom: 15,
+    marginRight: 14,
   },
-  featureSelectorText: {
-    color: 'white',
-    fontSize: 20,
+  featureTextContainer: {
+    flex: 1,
   },
-  featureSelectorSubText: {
-    color: 'grey',
-    fontSize: 15,
-    marginTop: 5,
+  featureTitle: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  featureSubtitle: {
+    color: '#8E8E93',
+    fontSize: 13,
+    marginTop: 2,
   },
 });
